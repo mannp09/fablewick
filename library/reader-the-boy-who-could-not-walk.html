@@ -241,6 +241,10 @@ body {
   font-weight: 500;
   color: var(--ink-light);
   letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .nav-center { letter-spacing: 0.06em; }
 }
 .nav-center .dots {
   display: inline-flex;
@@ -397,7 +401,7 @@ body {
 .flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
 @media (hover: none) {
   /* touch: show a faint resting hint so kids know the edges are tappable */
-  .flip-zone:not([disabled]) { opacity: 0.5; }
+  .flip-zone:not([disabled]) { opacity: 0; }
 }
 
 /* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
