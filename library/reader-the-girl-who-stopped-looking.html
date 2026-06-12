@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Girl Who Stopped Looking — Fablewick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #FBF6EE;
+  --cream-dark: #F0E8DA;
+  --ink: #2A2118;
+  --ink-light: #5A4D3E;
+  --amber: #D4925E;
+  --amber-light: #ECC9A8;
+  --coral: #D67A6E;
+  --sage: #8FA68A;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+  --radius-cozy: 28px;
+  --transition: 0.35s ease;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ───────────────────────────── */
+.book-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: 52px;
+}
+.book-topbar .back-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  transition: background var(--transition), color var(--transition);
+}
+.book-topbar .back-link:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.book-topbar .book-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.book-topbar .page-counter {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+}
+
+/* ── PROGRESS BAR ──────────────────────── */
+.progress-track {
+  position: fixed;
+  top: 52px; left: 0; right: 0;
+  height: 3px;
+  background: rgba(42, 33, 24, 0.06);
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--coral));
+  width: 20%;
+  transition: width 0.5s ease;
+}
+
+/* ── PAGE STAGE ──────────────────────────── */
+.stage {
+  position: fixed;
+  top: 55px; left: 0;
+  right: 0; bottom: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+.page-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Image area */
+.page-illustration {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 8px 32px rgba(42, 33, 24, 0.10);
+}
+.page-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.page-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.page-text p { margin-bottom: 1rem; }
+.page-text p:last-child { margin-bottom: 0; }
+
+/* Wider screens: image left, text right */
+@media (min-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    height: 100%;
+  }
+  .page-illustration {
+    aspect-ratio: 16 / 9;
+  }
+  .page-text {
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Tall screens: text first */
+@media (max-height: 600px) and (max-width: 899px) {
+  .page-illustration { aspect-ratio: 16 / 6; }
+  .page-text { font-size: 0.95rem; }
+}
+
+/* ── NAVIGATION ──────────────────────────── */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.15rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.prev {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-btn.prev:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(-2px);
+}
+.nav-btn.next {
+  background: var(--ink);
+  color: var(--cream);
+}
+.nav-btn.next:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateX(2px);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  letter-spacing: 0.14em;
+}
+.nav-center .dots {
+  display: inline-flex;
+  gap: 0.45rem;
+  vertical-align: middle;
+  margin-right: 0.65rem;
+}
+.nav-center .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(42, 33, 24, 0.18);
+  transition: background var(--transition), transform var(--transition);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-center .dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* ── COVER / END PAGES ──────────────────────── */
+.cover-page, .end-page {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.cover-page .page-inner, .end-page .page-inner {
+  grid-template-columns: 1fr !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.cover-kicker, .end-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1rem;
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  color: var(--ink-light);
+  max-width: 540px;
+  line-height: 1.6;
+}
+.end-mark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--amber);
+  margin-bottom: 1.5rem;
+}
+.end-line {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--ink-light);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.end-back-btn {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition), transform var(--transition);
+}
+.end-back-btn:hover {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.kbd-hint {
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 600px) { .kbd-hint { display: none; } }
+
+/* ── NAV UPGRADE: brand mark, flip zones, 3D page-turn ─────────── */
+.book-topbar .back-link { display: inline-flex; align-items: center; gap: 0.5rem; }
+.book-topbar .back-link .brand-mark {
+  height: 30px; width: auto; display: block; object-fit: contain;
+}
+.book-topbar .back-link .back-label { line-height: 1; }
+@media (max-width: 560px) {
+  .book-topbar .back-link .back-label { display: none; }
+  .book-topbar .back-link .brand-mark { height: 28px; }
+}
+
+/* Click-to-flip side gutters — over the page edges, clear of topbar + nav-bar */
+.flip-zone {
+  position: fixed;
+  top: 58px;
+  bottom: 4.75rem;
+  width: 24%;
+  max-width: 190px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.flip-prev { left: 0; justify-content: flex-start; padding-left: 0.4rem; }
+.flip-next { right: 0; justify-content: flex-end; padding-right: 0.4rem; }
+.flip-zone::before {
+  font-family: var(--font-ui);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink-light);
+  width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(251, 246, 238, 0.82);
+  border-radius: 100px;
+  box-shadow: 0 2px 10px rgba(42, 33, 24, 0.12);
+}
+.flip-prev::before { content: "\2039"; }
+.flip-next::before { content: "\203A"; }
+.flip-zone:hover, .flip-zone:focus-visible { opacity: 1; }
+.flip-zone:focus { outline: none; }
+.flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) {
+  /* touch: show a faint resting hint so kids know the edges are tappable */
+  .flip-zone:not([disabled]) { opacity: 0.5; }
+}
+
+/* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
+.stage { perspective: 2200px; }
+.page {
+  transform-origin: center center;
+  transform: rotateY(0);
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+.page.active { opacity: 1; pointer-events: auto; transform: rotateY(0) translateX(0); }
+.page.enter-fwd  { transition: none; opacity: 0; transform-origin: right center; transform: rotateY(-15deg) translateX(7%); }
+.page.enter-back { transition: none; opacity: 0; transform-origin: left center;  transform: rotateY(15deg)  translateX(-7%); }
+.page.turn-fwd   { opacity: 0; transform-origin: left center;  transform: rotateY(36deg)  translateX(-4%); }
+.page.turn-back  { opacity: 0; transform-origin: right center; transform: rotateY(-36deg) translateX(4%); }
+.page::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.55s ease;
+}
+.page.turn-fwd::after  { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0) 55%, rgba(42,33,24,0.16)); }
+.page.turn-back::after { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0.16), rgba(42,33,24,0) 45%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.active,
+  .page.enter-fwd, .page.enter-back,
+  .page.turn-fwd, .page.turn-back {
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
+  .page::after { display: none !important; }
+}
+
+/* ── COVER REDESIGN: centered wordmark + cover art ─────────────── */
+.book-topbar .topbar-wordmark {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 26px; width: auto; display: block;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .book-topbar .topbar-wordmark { height: 22px; }
+}
+.cover-page .page-inner {
+  justify-content: flex-start;
+  padding-top: 3vh;
+  gap: 1.5rem;
+}
+.cover-art {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 10px 36px rgba(42, 33, 24, 0.14);
+}
+.cover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 600px) {
+  .cover-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .cover-art { max-width: 100%; }
+  .cover-page .page-inner { padding-top: 2vh; }
+}
+
+/* ── DUSK THEME (reader) — night sky + light text/chrome ─────── */
+body { background: linear-gradient(180deg, #1C2A52 0%, #46396A 52%, #B97E7A 100%) !important; background-attachment: fixed !important; }
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#starfield .twk { position: absolute; opacity: 0.16; will-change: opacity, transform; }
+@keyframes fwTw { 0%,40%,100% { opacity: 0.14; transform: scale(0.6); } 47% { opacity: 1; transform: scale(1); } 54% { opacity: 0.14; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { #starfield .twk { animation: none !important; opacity: 0.5 !important; } }
+
+.stage { z-index: 1; }
+.book-topbar { background: rgba(24, 34, 66, 0.74) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+.book-topbar .back-link .back-label { color: #E7DFF3 !important; }
+.page-counter { color: #CFC6DD !important; }
+.progress-track { background: rgba(255,255,255,0.10) !important; }
+
+.page-text, .page-text p { color: #EFE7DD !important; }
+.cover-title { color: #FBF4EC !important; }
+.cover-tagline { color: #E6DAE4 !important; }
+.cover-kicker { color: #E9BD93 !important; }
+.end-mark { color: #E9BD93 !important; }
+.end-line { color: #E6DAE4 !important; }
+
+.nav-bar { background: rgba(24, 34, 66, 0.78) !important; border-top-color: rgba(255,255,255,0.12) !important; }
+.nav-btn.prev { background: rgba(255,255,255,0.12) !important; color: #EADFF0 !important; }
+.nav-btn.next { background: #F3ECE2 !important; color: #2A2342 !important; }
+.nav-center { color: #CFC6DD !important; }
+.nav-center .dot { background: rgba(255,255,255,0.28) !important; }
+.nav-center .dot.active { background: #E9BD93 !important; }
+</style>
+</head>
+<body>
+<div id="starfield" aria-hidden="true"></div>
+
+<div class="book-topbar">
+  <a href="fablewick-landing.html" class="back-link" aria-label="Fablewick home"><img class="brand-mark" src="../src/assets/fablewick-mark.png" alt="Fablewick"><span class="back-label">Library</span></a>
+  
+  <div class="page-counter" id="pageCounter">1 / 7</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage" role="main">
+  <button class="flip-zone flip-prev" id="flipPrev" type="button" aria-label="Previous page" tabindex="-1"></button>
+  <button class="flip-zone flip-next" id="flipNext" type="button" aria-label="Next page" tabindex="-1"></button>
+  <!-- PAGE 1: COVER -->
+  <section class="page cover-page active" data-page="1">
+    <div class="page-inner">
+      <h1 class="cover-title">The Girl Who Stopped Looking</h1>
+      <div class="cover-art"><img src="../src/assets/pages/the-girl-who-stopped-looking/cover.jpg" alt=""></div>
+      <p class="cover-tagline">A story for ages 6–10 about winning by staying in your own lane</p>
+    </div>
+  </section>
+
+  <!-- PAGE 2: Setup: the pool + the lane next door -->
+  <section class="page" data-page="2">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-girl-who-stopped-looking/page-01.jpg" alt="Maya swimming in her lane of a calm blue pool, glancing at the fast swimmer in the lane beside her" onerror="this.onerror=null;this.src='../src/assets/pages/the-girl-who-stopped-looking/page-01.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Maya loved her lane. Long, blue, quiet, with one painted line on the bottom, pointing the way.</p>
+        <p>Kick, breathe, kick. Kick, breathe, kick.</p>
+        <p>But in the next lane, somebody fast was pulling ahead. Splash, splash, splash.</p>
+        <p>Maya looked. Her arms forgot their job. Her kicks turned to flutters. Water sneaked up her nose, the worst feeling in the whole world.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: Coach Ngu's lesson + trying and failing -->
+  <section class="page" data-page="3">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-girl-who-stopped-looking/page-02.jpg" alt="Coach Ngu talking with Maya at the edge of the pool" onerror="this.onerror=null;this.src='../src/assets/pages/the-girl-who-stopped-looking/page-02.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Maya held the wall, dripping.</p>
+        <p>"What are you doing?" asked Coach Ngu, crouching down.</p>
+        <p>"Watching the other lane. To see if I'm winning."</p>
+        <p>Coach Ngu shook his head slowly, the way he did when he was saying something for the hundredth time.</p>
+        <p>"You can't win in somebody else's lane," he said. "You can only swim in yours. So watch yours."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4: The big meet + on the block + the dive -->
+  <section class="page" data-page="4">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-girl-who-stopped-looking/page-03.jpg" alt="Maya standing on the starting block before the big race, Coach Ngu's hand on her shoulder" onerror="this.onerror=null;this.src='../src/assets/pages/the-girl-who-stopped-looking/page-03.jpg'">
+      </div>
+      <div class="page-text">
+        <p>The big meet came. Six lanes. Six girls. And right next to Maya: the fastest swimmer she had ever seen.</p>
+        <p>Maya stood on the block, toes curled over the edge, shaking a little.</p>
+        <p>Coach Ngu leaned close, one steady hand on her shoulder.</p>
+        <p>"I'm not asking you to win," he said quietly. "I'm asking you to swim your race. There's a difference."</p>
+        <p>The whistle blew. Maya dove.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5: The race: my lane, my lane + the wall -->
+  <section class="page" data-page="5">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-girl-who-stopped-looking/page-04.jpg" alt="Maya swimming with her face in the water, focused only on her own lane" onerror="this.onerror=null;this.src='../src/assets/pages/the-girl-who-stopped-looking/page-04.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Under the water, the world went quiet.</p>
+        <p>Her lane stretched out ahead, blue and clear. Kick, breathe, kick.</p>
+        <p>A splash landed on her left — close, fast. Maya did not look. The crowd roared far above. Maya did not look.</p>
+        <p>My lane, my lane, my lane.</p>
+        <p>Her hand smacked the wall.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 6: The clock: her fastest time ever + the smile -->
+  <section class="page" data-page="6">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-girl-who-stopped-looking/page-05.jpg" alt="Maya at the wall looking up at the big clock, smiling at her fastest time" onerror="this.onerror=null;this.src='../src/assets/pages/the-girl-who-stopped-looking/page-05.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Maya pulled her face from the water. The fast girl was already out of the pool. Maya had not won.</p>
+        <p>Then Coach Ngu pointed at the big yellow clock.</p>
+        <p>Her fastest time ever — by two whole seconds.</p>
+        <p>"You swam your race," he said, soft as a secret. "That's the only race that has ever been yours."</p>
+        <p>Maya looked at her lane. Calm again. Blue again. Hers.</p>
+        <p>And she smiled.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 7: END -->
+  <section class="page end-page" data-page="7">
+    <div class="page-inner">
+      <div class="end-mark">— The End —</div>
+      <p class="end-line">The race is won by staying in your own lane.</p>
+      <a href="fablewick-landing.html" class="end-back-btn">← Back to the library</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar" role="navigation" aria-label="Story pages">
+  <button class="nav-btn prev" id="prevBtn" disabled aria-label="Previous page">← Back</button>
+  <div class="nav-center">
+    <span class="dots" id="dots"></span>
+    <span id="pageLabel" aria-live="polite">Page 1 of 7</span>
+  </div>
+  <button class="nav-btn next" id="nextBtn" aria-label="Next page">Next →</button>
+</div>
+
+<script>
+// ─── i18n data (inlined to avoid file:// fetch issues) ────────
+const I18N = {"pageTexts": {"en": ["Maya loved her lane. Long, blue, quiet, with one painted line on the bottom, pointing the way.\n\nKick, breathe, kick. Kick, breathe, kick.\n\nBut in the next lane, somebody fast was pulling ahead. Splash, splash, splash.\n\nMaya looked. Her arms forgot their job. Her kicks turned to flutters. Water sneaked up her nose, the worst feeling in the whole world.", "Maya held the wall, dripping.\n\n\"What are you doing?\" asked Coach Ngu, crouching down.\n\n\"Watching the other lane. To see if I'm winning.\"\n\nCoach Ngu shook his head slowly, the way he did when he was saying something for the hundredth time.\n\n\"You can't win in somebody else's lane,\" he said. \"You can only swim in yours. So watch yours.\"", "The big meet came. Six lanes. Six girls. And right next to Maya: the fastest swimmer she had ever seen.\n\nMaya stood on the block, toes curled over the edge, shaking a little.\n\nCoach Ngu leaned close, one steady hand on her shoulder.\n\n\"I'm not asking you to win,\" he said quietly. \"I'm asking you to swim your race. There's a difference.\"\n\nThe whistle blew. Maya dove.", "Under the water, the world went quiet.\n\nHer lane stretched out ahead, blue and clear. Kick, breathe, kick.\n\nA splash landed on her left — close, fast. Maya did not look. The crowd roared far above. Maya did not look.\n\nMy lane, my lane, my lane.\n\nHer hand smacked the wall.", "Maya pulled her face from the water. The fast girl was already out of the pool. Maya had not won.\n\nThen Coach Ngu pointed at the big yellow clock.\n\nHer fastest time ever — by two whole seconds.\n\n\"You swam your race,\" he said, soft as a secret. \"That's the only race that has ever been yours.\"\n\nMaya looked at her lane. Calm again. Blue again. Hers.\n\nAnd she smiled."], "hi": ["माया जब से याद कर सकती थी, तब से तैर रही थी। पूल वह जगह थी जहाँ वह सबसे अधिक खुद जैसी महसूस करती थी। लंबा, नीला और शांत, तल पर छह साफ़-सुथरी लेन बनी हुई।\n\nपरेशानी उसके बगल वाली लेन थी।\n\nउसके बगल वाली लेन में, लगभग हमेशा कोई तेज़ तैराक होता था। माया उन्हें अपने चश्मे के कोने से देख सकती थी। हाथों की एक लकीर, पैरों की हलचल, आगे बढ़ती हुई, हमेशा आगे बढ़ती हुई। और हर बार जब माया यह देखती, उसके अंदर कुछ कस जाता।\n\nवह धीमी हो जाती। वह जाँचने के लिए सिर उठाती। वह अपनी लय खो देती।", "\"माया,\" उसके कोच ने कहा, जिनका नाम कोच ङ्गू था, \"तुम क्या कर रही हो?\"\n\n\"मैं दूसरी लेन देख रही हूँ,\" माया ने कहा।\n\n\"क्यों?\"\n\n\"यह देखने के लिए कि मैं जीत रही हूँ या नहीं।\"\n\nकोच ङ्गू ने धीरे से सिर हिलाया। \"तुम किसी और की लेन में जीत नहीं सकती,\" उन्होंने कहा। \"तुम केवल अपनी लेन में तैर सकती हो। अपनी देखो।\"\n\nमाया ने कोशिश की। सच में कोशिश की। वह पानी में चेहरा डालती और खुद से कहती, मेरी लेन, मेरी लेन, मेरी लेन। लेकिन जिस पल वह अपनी बाईं ओर तेज़ पैरों की छपछप सुनती, उसकी आँखें अपने आप उस ओर खिसक जातीं। और जिस पल उसकी आँखें खिसकतीं, उसके हाथ भूल जाते कि वे क्या कर रहे थे।", "महीने के अंत में बड़ी प्रतियोगिता आई। छह लेन। छह लड़कियाँ। और माया के बगल वाली लेन में: माया ने अब तक की सबसे तेज़ तैराक देखी।\n\nमाया ब्लॉक पर खड़ी थी, थोड़ी काँपते हुए। कोच ङ्गू उसके पीछे आए।\n\n\"माया,\" उन्होंने कहा। \"मैं तुमसे जीतने को नहीं कहूँगा। मैं तुमसे कहूँगा कि अपनी रेस तैरो। क्या तुम फर्क समझती हो?\"\n\nमाया ने सिर हिलाया, हालाँकि उसे यकीन नहीं था कि वह समझती है।\n\nसीटी बजी। माया ने डुबकी लगाई।", "पानी में, दुनिया शांत हो गई। माया ने पैर मारे। उसने सांस ली। उसने पैर मारे। बाईं ओर एक छपछप थी, लेकिन उसने सिर नहीं घुमाया। भीड़ से शोर था, लेकिन वह बहुत दूर था।\n\nमेरी लेन, मेरी लेन, मेरी लेन।\n\nउसका हाथ दीवार से टकराया।\n\nमाया ने अपना चश्मा खींचकर निकाला। सबसे तेज़ तैराक पहले ही पूल से बाहर थी, अपने माता-पिता को देखकर मुस्कुरा रही थी। दो और लड़कियाँ माया के पीछे दीवार छू रही थीं। वह नहीं जीती थी।", "फिर कोच ङ्गू ने बड़ी घड़ी की ओर इशारा किया।\n\nमाया ने देखा। घड़ी पर नंबर उसका अब तक का सबसे तेज़ समय था। लगभग दो सेकंड से।\n\n\"तुमने अपनी रेस तैरी,\" कोच ङ्गू ने बहुत धीरे से कहा। \"यही एकमात्र रेस है जो सच में तुम्हारी रही है।\"\n\nमाया ने घड़ी को लंबे पल तक देखा।\n\nफिर उसने अपनी लेन देखी। फिर से शांत, फिर से नीली, उसकी अपनी।\n\nऔर वह मुस्कुराई।"], "gu": ["માયા જ્યારથી યાદ રાખી શકતી હતી ત્યારથી તરતી હતી. પૂલ એવી જગ્યા હતી જ્યાં તે પોતાના જેવી સૌથી વધુ લાગતી. લાંબો, વાદળી અને શાંત, તળિયે છ સ્વચ્છ લેન દોરેલી.\n\nમુશ્કેલી એની બાજુની લેન હતી.\n\nએની બાજુની લેનમાં, લગભગ હંમેશા કોઈ ઝડપી તરનાર હોતું. માયા એમને એના ચશ્માની ધારથી જોઈ શકતી. હાથોની એક રેખા, પગની હલચલ, આગળ વધતા, હંમેશા આગળ વધતા. અને જ્યારે જ્યારે માયા એ જોતી, એની અંદર કંઈક કસાઈ જતું.\n\nએ ધીમી પડી જતી. એ તપાસવા માટે માથું ઊંચું કરતી. એ પોતાની લય ગુમાવી દેતી.", "\"માયા,\" એના કોચે કહ્યું, જેમનું નામ કોચ ન્ગુ હતું, \"તું શું કરી રહી છે?\"\n\n\"હું બીજી લેન જોઈ રહી છું,\" માયા એ કહ્યું.\n\n\"કેમ?\"\n\n\"એ જોવા કે હું જીતી રહી છું કે નહીં.\"\n\nકોચ ન્ગુ એ ધીમેથી માથું હલાવ્યું. \"તું બીજાની લેનમાં જીતી શકતી નથી,\" એમણે કહ્યું. \"તું ફક્ત તારી પોતાની લેનમાં જ તરી શકે છે. તારી જો.\"\n\nમાયા એ પ્રયત્ન કર્યો. ખરેખર પ્રયત્ન કર્યો. એ પાણીમાં ચહેરો મૂકતી અને પોતાને કહેતી, મારી લેન, મારી લેન, મારી લેન. પણ જે ક્ષણે એને એની ડાબી બાજુ ઝડપી પગનો છપકો સંભળાતો, એની આંખો પોતાની મેળે જ એ બાજુ ખસી જતી. અને જે ક્ષણે એની આંખો ખસતી, એના હાથો ભૂલી જતા કે તેઓ શું કરી રહ્યા હતા.", "મહિનાના અંતે મોટી સ્પર્ધા આવી. છ લેન. છ છોકરીઓ. અને માયા ની બાજુની લેનમાં: માયા એ જોયેલી સૌથી ઝડપી તરનાર.\n\nમાયા બ્લોક પર ઊભી હતી, થોડી ધ્રૂજતી. કોચ ન્ગુ એની પાછળ આવ્યા.\n\n\"માયા,\" એમણે કહ્યું. \"હું તને જીતવાનું નહીં કહું. હું તને કહીશ કે તારી રેસ તર. શું તને ફેર સમજાય છે?\"\n\nમાયા એ માથું હલાવ્યું, જોકે એને ખાતરી નહોતી કે એ સમજે છે.\n\nસીટી વાગી. માયા એ ડૂબકી લગાવી.", "પાણીમાં, દુનિયા શાંત થઈ ગઈ. માયા એ પગ માર્યા. એણે શ્વાસ લીધો. એણે પગ માર્યા. એની ડાબી બાજુ છપકો હતો, પણ એણે માથું ન ફેરવ્યું. ભીડમાંથી અવાજ આવતો હતો, પણ એ ઘણો દૂર હતો.\n\nમારી લેન, મારી લેન, મારી લેન.\n\nએનો હાથ દિવાલને અડ્યો.\n\nમાયા એ ચશ્મા ઉતાર્યા. સૌથી ઝડપી તરનાર પહેલેથી જ પૂલની બહાર હતી, એના માતા-પિતા સામે હસતી હતી. બે બીજી છોકરીઓ માયા ની પાછળ દિવાલને અડી રહી હતી. એ જીતી નહોતી.", "પછી કોચ ન્ગુ એ મોટી ઘડિયાળ તરફ ઈશારો કર્યો.\n\nમાયા એ જોયું. ઘડિયાળ પરનો નંબર એનો અત્યાર સુધીનો સૌથી ઝડપી સમય હતો. લગભગ બે સેકન્ડથી.\n\n\"તેં તારી રેસ તરી,\" કોચ ન્ગુ એ ખૂબ ધીમેથી કહ્યું. \"એ જ એક રેસ છે જે ખરેખર તારી રહી છે.\"\n\nમાયા એ લાંબા સમય માટે ઘડિયાળ જોઈ.\n\nપછી એણે પોતાની લેન જોઈ. ફરી શાંત, ફરી વાદળી, એની પોતાની.\n\nઅને એ હસી."], "es": ["Maya había estado nadando desde que podía recordar. La piscina era el lugar donde más se sentía ella misma. Larga, azul y silenciosa, con seis carriles ordenados pintados en el fondo.\n\nEl problema era el carril de al lado.\n\nEn el carril de al lado, casi siempre había alguien rápido. Maya podía verlos por el rabillo de sus gafas. Una estela de brazos, una agitación de pies, adelantándose, siempre adelantándose. Y cada vez que Maya lo veía, algo dentro de ella se tensaba.\n\nReducía la velocidad. Levantaba la cabeza para comprobar. Perdía su ritmo.", "\"Maya,\" dijo su entrenador, que se llamaba Coach Ngu, \"¿qué estás haciendo?\"\n\n\"Estoy mirando el otro carril,\" dijo Maya.\n\n\"¿Por qué?\"\n\n\"Para ver si voy ganando.\"\n\nCoach Ngu negó con la cabeza lentamente. \"No puedes ganar en el carril de otra persona,\" dijo. \"Solo puedes nadar en el tuyo. Mira el tuyo.\"\n\nMaya lo intentó. De verdad lo intentó. Metía la cara en el agua y se decía a sí misma, mi carril, mi carril, mi carril. Pero en el momento en que escuchaba el chapoteo de pies rápidos a su izquierda, sus ojos se deslizaban hacia allá por sí solos. Y en el momento en que sus ojos se deslizaban hacia allá, sus brazos olvidaban lo que estaban haciendo.", "La gran competencia llegó a fin de mes. Seis carriles. Seis niñas. Y en el carril al lado de Maya: la nadadora más rápida que Maya había visto jamás.\n\nMaya estaba parada en el bloque, temblando un poco. Coach Ngu se acercó por detrás.\n\n\"Maya,\" dijo. \"No te voy a pedir que ganes. Te voy a pedir que nades tu carrera. ¿Entiendes la diferencia?\"\n\nMaya asintió, aunque no estaba segura de entender.\n\nSonó el silbato. Maya se zambulló.", "En el agua, el mundo se quedó en silencio. Maya pateó. Respiró. Pateó. Hubo un chapoteo a su izquierda, pero no giró la cabeza. Hubo un ruido de la multitud, pero estaba muy lejos.\n\nMi carril, mi carril, mi carril.\n\nSu mano golpeó la pared.\n\nMaya se quitó las gafas. La nadadora más rápida ya estaba fuera de la piscina, sonriendo a sus padres. Otras dos niñas estaban tocando la pared detrás de Maya. No había ganado.", "Entonces Coach Ngu señaló el reloj grande.\n\nMaya miró. El número en el reloj era su tiempo más rápido jamás. Por casi dos segundos.\n\n\"Nadaste tu carrera,\" dijo Coach Ngu, muy bajito. \"Esa es la única carrera que ha sido tuya.\"\n\nMaya miró el reloj por un largo momento.\n\nLuego miró su propio carril. Tranquilo otra vez, azul otra vez, suyo.\n\nY sonrió."], "fr": ["Maya nageait depuis aussi longtemps qu'elle pouvait s'en souvenir. La piscine était l'endroit où elle se sentait le plus elle-même. Longue, bleue et silencieuse, avec six couloirs bien rangés peints au fond.\n\nLe problème, c'était le couloir d'à côté.\n\nDans le couloir d'à côté, il y avait presque toujours quelqu'un de rapide. Maya pouvait les voir du coin de ses lunettes. Une traînée de bras, une agitation de pieds, prenant de l'avance, prenant toujours de l'avance. Et chaque fois que Maya voyait cela, quelque chose en elle se tendait.\n\nElle ralentissait. Elle levait la tête pour vérifier. Elle perdait son rythme.", "\"Maya,\" a dit son entraîneur, qui s'appelait Coach Ngu, \"qu'est-ce que tu fais?\"\n\n\"Je regarde l'autre couloir,\" a dit Maya.\n\n\"Pourquoi?\"\n\n\"Pour voir si je gagne.\"\n\nCoach Ngu a secoué la tête lentement. \"Tu ne peux pas gagner dans le couloir de quelqu'un d'autre,\" a-t-il dit. \"Tu ne peux nager que dans le tien. Regarde le tien.\"\n\nMaya a essayé. Elle a vraiment essayé. Elle mettait son visage dans l'eau et se disait, mon couloir, mon couloir, mon couloir. Mais au moment où elle entendait les éclaboussures de pieds rapides à sa gauche, ses yeux glissaient dans cette direction tout seuls. Et au moment où ses yeux glissaient dans cette direction, ses bras oubliaient ce qu'ils faisaient.", "La grande compétition est arrivée à la fin du mois. Six couloirs. Six filles. Et dans le couloir à côté de Maya: la nageuse la plus rapide que Maya ait jamais vue.\n\nMaya était debout sur le plot, tremblant un peu. Coach Ngu s'est approché par derrière.\n\n\"Maya,\" a-t-il dit. \"Je ne vais pas te demander de gagner. Je vais te demander de nager ta course. Tu comprends la différence?\"\n\nMaya a hoché la tête, même si elle n'était pas sûre de comprendre.\n\nLe sifflet a retenti. Maya a plongé.", "Dans l'eau, le monde est devenu silencieux. Maya a battu des jambes. Elle a respiré. Elle a battu des jambes. Il y avait une éclaboussure à sa gauche, mais elle n'a pas tourné la tête. Il y avait un bruit de la foule, mais c'était très loin.\n\nMon couloir, mon couloir, mon couloir.\n\nSa main a frappé le mur.\n\nMaya a enlevé ses lunettes. La nageuse la plus rapide était déjà sortie de la piscine, souriant à ses parents. Deux autres filles touchaient le mur derrière Maya. Elle n'avait pas gagné.", "Puis Coach Ngu a pointé la grande horloge.\n\nMaya a regardé. Le nombre sur l'horloge était son temps le plus rapide jamais réalisé. De presque deux secondes.\n\n\"Tu as nagé ta course,\" a dit Coach Ngu, très doucement. \"C'est la seule course qui ait jamais été à toi.\"\n\nMaya a regardé l'horloge pendant un long moment.\n\nPuis elle a regardé son propre couloir. Calme à nouveau, bleu à nouveau, à elle.\n\nEt elle a souri."]}, "covers": {"en": "A story for ages 6–10 about winning by staying in your own lane", "hi": "उम्र 6–10 के लिए एक कहानी, इस बारे में कि रेस अपनी लेन में रहकर ही जीती जाती है", "gu": "ઉંમર 6–10 માટેની વાર્તા, એ વિશે કે રેસ પોતાની લેનમાં રહીને જ જીતાય છે", "es": "Una historia para edades 6–10 sobre ganar quedándote en tu propio carril", "fr": "Une histoire pour les 6–10 ans sur gagner en restant dans son propre couloir"}, "ends": {"en": "The race is won by staying in your own lane.", "hi": "रेस अपनी लेन में रहकर ही जीती जाती है।", "gu": "રેસ પોતાની લેનમાં રહીને જ જીતાય છે.", "es": "La carrera se gana quedándote en tu propio carril.", "fr": "La course se gagne en restant dans son propre couloir."}, "back_labels": {"en": "← Library", "hi": "← पुस्तकालय", "gu": "← પુસ્તકાલય", "es": "← Biblioteca", "fr": "← Bibliothèque"}, "end_btn": {"en": "← Back to the library", "hi": "← पुस्तकालय पर वापस", "gu": "← પુસ્તકાલય પર પાછા", "es": "← Volver a la biblioteca", "fr": "← Retour à la bibliothèque"}, "titles": {"en": "The Girl Who Stopped Looking", "hi": "वह लड़की जिसने देखना छोड़ दिया", "gu": "એ છોકરી જેણે જોવાનું છોડી દીધું", "es": "La niña que dejó de mirar", "fr": "La fille qui a cessé de regarder"}, "kickers": {"en": "Fablewick", "hi": "फेबलविक", "gu": "ફેબલવિક", "es": "Fablewick", "fr": "Fablewick"}, "end_marks": {"en": "— The End —", "hi": "— समाप्त —", "gu": "— સમાપ્ત —", "es": "— Fin —", "fr": "— Fin —"}, "nav_prev": {"en": "← Back", "hi": "← पीछे", "gu": "← પાછળ", "es": "← Atrás", "fr": "← Retour"}, "nav_next": {"en": "Next →", "hi": "आगे →", "gu": "આગળ →", "es": "Siguiente →", "fr": "Suivant →"}, "page_label": {"en": "Page {n} of {t}", "hi": "पृष्ठ {n} / {t}", "gu": "પૃષ્ઠ {n} / {t}", "es": "Página {n} de {t}", "fr": "Page {n} sur {t}"}};
+
+// Read persisted language from the landing page's localStorage
+const LANG_KEY = 'fablewick.lang';
+const SUPPORTED_LANGS = ['en', 'hi', 'gu', 'es', 'fr'];
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return SUPPORTED_LANGS.includes(saved) ? saved : 'en';
+  } catch (e) { return 'en'; }
+})();
+
+// Apply translations on page load
+document.addEventListener('DOMContentLoaded', () => {
+  applyLanguage(currentLang);
+});
+
+function applyLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) lang = 'en';
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Cover tagline + end line + back labels
+  const coverTagline = document.querySelector('.cover-tagline');
+  if (coverTagline) coverTagline.textContent = I18N.covers[lang] || I18N.covers.en;
+
+  const endLine = document.querySelector('.end-line');
+  if (endLine) endLine.textContent = I18N.ends[lang] || I18N.ends.en;
+
+  const backLabel = document.querySelector('.book-topbar .back-link .back-label');
+  if (backLabel) backLabel.textContent = (I18N.back_labels[lang] || I18N.back_labels.en).replace(/^[←\s]+/, '');
+
+  const endBtn = document.querySelector('.end-back-btn');
+  if (endBtn) endBtn.textContent = I18N.end_btn[lang] || I18N.end_btn.en;
+
+  // Cover title + kicker, end mark, topbar book name, document title — native script
+  const coverTitle = document.querySelector('.cover-title');
+  if (coverTitle && I18N.titles) coverTitle.textContent = I18N.titles[lang] || I18N.titles.en;
+
+  const coverKicker = document.querySelector('.cover-kicker');
+  if (coverKicker && I18N.kickers) coverKicker.textContent = I18N.kickers[lang] || I18N.kickers.en;
+
+  const endMark = document.querySelector('.end-mark');
+  if (endMark && I18N.end_marks) endMark.textContent = I18N.end_marks[lang] || I18N.end_marks.en;
+
+  // topbar shows the Fablewick wordmark (image) — always English, never translated
+  if (I18N.titles) document.title = (I18N.titles[lang] || I18N.titles.en) + ' — Fablewick';
+
+  const prevB = document.getElementById('prevBtn');
+  if (prevB && I18N.nav_prev) prevB.textContent = I18N.nav_prev[lang] || I18N.nav_prev.en;
+  const nextB = document.getElementById('nextBtn');
+  if (nextB && I18N.nav_next) nextB.textContent = I18N.nav_next[lang] || I18N.nav_next.en;
+
+  if (typeof updateUI === 'function') updateUI();
+
+  // Page-by-page story text — pages with class .image-page or just .page (not cover/end)
+  // Use a fixed 5-page mapping: the 5 content pages between cover and end
+  const contentPages = Array.from(document.querySelectorAll('.page'))
+    .filter(p => !p.classList.contains('cover-page') && !p.classList.contains('end-page'));
+  const pageTextsForLang = I18N.pageTexts[lang] || I18N.pageTexts.en;
+  contentPages.forEach((pageEl, idx) => {
+    const textEl = pageEl.querySelector('.page-text');
+    if (!textEl || !pageTextsForLang[idx]) return;
+    // Split into <p> paragraphs by double newline
+    const html = pageTextsForLang[idx]
+      .split(/\n\s*\n/)
+      .map(p => '<p>' + escapeForHtml(p.trim()) + '</p>')
+      .join('');
+    textEl.innerHTML = html;
+  });
+}
+
+function escapeForHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+const pages = Array.from(document.querySelectorAll('.page'));
+const total = pages.length;
+let currentIdx = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipPrev = document.getElementById('flipPrev');
+const flipNext = document.getElementById('flipNext');
+const pageCounter = document.getElementById('pageCounter');
+const pageLabel = document.getElementById('pageLabel');
+const progressFill = document.getElementById('progressFill');
+const dotsEl = document.getElementById('dots');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.dataset.idx = i;
+  d.setAttribute('aria-label', 'Go to page ' + (i + 1));
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function goTo(newIdx) {
+  if (newIdx < 0 || newIdx >= total || newIdx === currentIdx) return;
+  const dir = newIdx > currentIdx ? 1 : -1;
+  const oldPage = pages[currentIdx];
+  const newPage = pages[newIdx];
+
+  // incoming page: preset on the side it enters from (no transition for the preset)
+  newPage.classList.remove('active', 'turn-fwd', 'turn-back', 'enter-fwd', 'enter-back');
+  newPage.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+  void newPage.offsetWidth;            // commit the preset before animating
+
+  // outgoing page turns away like a leaf
+  oldPage.classList.remove('active');
+  oldPage.classList.add(dir > 0 ? 'turn-fwd' : 'turn-back');
+
+  // incoming page settles flat
+  newPage.classList.remove('enter-fwd', 'enter-back');
+  newPage.classList.add('active');
+
+  setTimeout(() => {
+    oldPage.classList.remove('turn-fwd', 'turn-back', 'exit-left');
+    const txt = newPage.querySelector('.page-text');
+    if (txt) txt.scrollTop = 0;
+  }, 600);
+
+  currentIdx = newIdx;
+  updateUI();
+}
+
+function updateUI() {
+  const n = currentIdx + 1;
+  pageCounter.textContent = `${n} / ${total}`;
+  const labelTmpl = (I18N.page_label && (I18N.page_label[currentLang] || I18N.page_label.en)) || 'Page {n} of {t}';
+  pageLabel.textContent = labelTmpl.replace('{n}', n).replace('{t}', total);
+  progressFill.style.width = (n / total * 100) + '%';
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === total - 1;
+  if (flipPrev) flipPrev.disabled = currentIdx === 0;
+  if (flipNext) flipNext.disabled = currentIdx === total - 1;
+  var _wm = document.querySelector('.topbar-wordmark');
+  if (_wm) _wm.style.display = currentIdx === 0 ? '' : 'none';
+  Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+if (flipPrev) flipPrev.addEventListener('click', () => goTo(currentIdx - 1));
+if (flipNext) flipNext.addEventListener('click', () => goTo(currentIdx + 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { goTo(currentIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { goTo(currentIdx - 1); e.preventDefault(); }
+  if (e.key === 'Escape') { window.location.href = 'fablewick-landing.html'; }
+});
+
+updateUI();
+
+// ─── DUSK THEME starfield (reader) ────────────────────────────
+(function () {
+  var sky = document.getElementById('starfield');
+  if (!sky) return;
+  var spark = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z" fill="#FFF6E0"/></svg>';
+  var n = Math.max(30, Math.min(80, Math.round(window.innerWidth * window.innerHeight / 16000)));
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('div');
+    s.className = 'twk';
+    var size = (3 + Math.random() * 6).toFixed(1);
+    s.style.left = (Math.random() * 99).toFixed(1) + '%';
+    s.style.top = (Math.random() * 92).toFixed(1) + '%';
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.animation = 'fwTw ' + (2.4 + Math.random() * 3.2).toFixed(2) + 's ease-in-out ' + (Math.random() * 6).toFixed(2) + 's infinite';
+    s.innerHTML = spark;
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

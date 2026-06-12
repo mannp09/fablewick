@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #FBF6EE;
+  --color-cream-soft: #F5EFE3;
+  --color-ink: #2A2118;
+  --color-ink-soft: #5A4E40;
+  --color-sage: #8FA68A;
+  --color-sage-deep: #5E7B5F;
+  --color-amber: #D4925E;
+  --color-amber-deep: #B26F3D;
+  --color-coral: #D67A6E;
+  --color-rust: #A8543F;
+  --color-paper: #FFFCF6;
+
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-body: "Lora", "Georgia", serif;
+  --font-ui: "Outfit", "Inter", sans-serif;
+
+  --radius-soft: 12px;
+  --radius-warm: 20px;
+  --radius-cozy: 28px;
+}
+
+@layer base {
+  html {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+
+  body {
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  ::selection {
+    background: var(--color-amber);
+    color: var(--color-paper);
+  }
+}
+
+@layer components {
+  .prose-story {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    line-height: 1.85;
+    max-width: 38rem;
+    color: var(--color-ink);
+  }
+
+  .prose-story p {
+    margin-bottom: 1.25em;
+  }
+
+  .prose-story p:first-of-type::first-letter {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    float: left;
+    line-height: 1;
+    padding: 0.1em 0.1em 0 0;
+    color: var(--color-amber-deep);
+  }
+
+  .card-cozy {
+    background: var(--color-paper);
+    border-radius: var(--radius-warm);
+    box-shadow: 0 1px 2px rgba(42, 33, 24, 0.04), 0 8px 24px rgba(42, 33, 24, 0.06);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  .card-cozy:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 2px 4px rgba(42, 33, 24, 0.06), 0 16px 32px rgba(42, 33, 24, 0.1);
+  }
+
+  .btn-warm {
+    background: var(--color-amber);
+    color: var(--color-paper);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-soft);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    transition: background 150ms ease;
+    cursor: pointer;
+  }
+
+  .btn-warm:hover {
+    background: var(--color-amber-deep);
+  }
+
+  .btn-quiet {
+    background: transparent;
+    color: var(--color-ink-soft);
+    border: 1px solid var(--color-sage);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-soft);
+    font-family: var(--font-ui);
+    transition: all 150ms ease;
+    cursor: pointer;
+  }
+
+  .btn-quiet:hover {
+    background: var(--color-cream-soft);
+    color: var(--color-ink);
+  }
+
+  .badge-age {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--color-sage);
+    color: var(--color-paper);
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+}

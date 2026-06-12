@@ -1,0 +1,44 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.local
+.env.production
+
+# Cloudflare Wrangler
+.wrangler/
+.dev.vars
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# ── public-deploy excludes (privacy / bloat / internal) ──────────
+# personal photo — never publish
+src/assets/**/mann-headshot*
+src/assets/mann-headshot*
+# PNG masters (~576 MB) — the site ships the JPG derivatives
+src/assets/pages/**/*.png
+# old local git history
+.git-backup/
+# internal build / review artifacts
+_*.html
+_*.png
+_rewrite/
+library/demo-reel.pdf
+library/image-audit.html

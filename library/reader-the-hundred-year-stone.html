@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hundred-Year Stone — Fablewick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #FBF6EE;
+  --cream-dark: #F0E8DA;
+  --ink: #2A2118;
+  --ink-light: #5A4D3E;
+  --amber: #D4925E;
+  --amber-light: #ECC9A8;
+  --coral: #D67A6E;
+  --sage: #8FA68A;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+  --radius-cozy: 28px;
+  --transition: 0.35s ease;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ───────────────────────────── */
+.book-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: 52px;
+}
+.book-topbar .back-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  transition: background var(--transition), color var(--transition);
+}
+.book-topbar .back-link:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.book-topbar .book-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.book-topbar .page-counter {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+}
+
+/* ── PROGRESS BAR ──────────────────────── */
+.progress-track {
+  position: fixed;
+  top: 52px; left: 0; right: 0;
+  height: 3px;
+  background: rgba(42, 33, 24, 0.06);
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--coral));
+  width: 20%;
+  transition: width 0.5s ease;
+}
+
+/* ── PAGE STAGE ──────────────────────────── */
+.stage {
+  position: fixed;
+  top: 55px; left: 0;
+  right: 0; bottom: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+.page-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Image area */
+.page-illustration {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 8px 32px rgba(42, 33, 24, 0.10);
+}
+.page-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.page-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.page-text p { margin-bottom: 1rem; }
+.page-text p:last-child { margin-bottom: 0; }
+
+/* Wider screens: image left, text right */
+@media (min-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    height: 100%;
+  }
+  .page-illustration {
+    aspect-ratio: 16 / 9;
+  }
+  .page-text {
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Tall screens: text first */
+@media (max-height: 600px) and (max-width: 899px) {
+  .page-illustration { aspect-ratio: 16 / 6; }
+  .page-text { font-size: 0.95rem; }
+}
+
+/* ── NAVIGATION ──────────────────────────── */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.15rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.prev {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-btn.prev:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(-2px);
+}
+.nav-btn.next {
+  background: var(--ink);
+  color: var(--cream);
+}
+.nav-btn.next:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateX(2px);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  letter-spacing: 0.14em;
+}
+.nav-center .dots {
+  display: inline-flex;
+  gap: 0.45rem;
+  vertical-align: middle;
+  margin-right: 0.65rem;
+}
+.nav-center .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(42, 33, 24, 0.18);
+  transition: background var(--transition), transform var(--transition);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-center .dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* ── COVER / END PAGES ──────────────────────── */
+.cover-page, .end-page {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.cover-page .page-inner, .end-page .page-inner {
+  grid-template-columns: 1fr !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.cover-kicker, .end-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1rem;
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  color: var(--ink-light);
+  max-width: 540px;
+  line-height: 1.6;
+}
+.end-mark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--amber);
+  margin-bottom: 1.5rem;
+}
+.end-line {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--ink-light);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.end-back-btn {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition), transform var(--transition);
+}
+.end-back-btn:hover {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.kbd-hint {
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 600px) { .kbd-hint { display: none; } }
+
+/* ── NAV UPGRADE: brand mark, flip zones, 3D page-turn ─────────── */
+.book-topbar .back-link { display: inline-flex; align-items: center; gap: 0.5rem; }
+.book-topbar .back-link .brand-mark {
+  height: 30px; width: auto; display: block; object-fit: contain;
+}
+.book-topbar .back-link .back-label { line-height: 1; }
+@media (max-width: 560px) {
+  .book-topbar .back-link .back-label { display: none; }
+  .book-topbar .back-link .brand-mark { height: 28px; }
+}
+
+/* Click-to-flip side gutters — over the page edges, clear of topbar + nav-bar */
+.flip-zone {
+  position: fixed;
+  top: 58px;
+  bottom: 4.75rem;
+  width: 24%;
+  max-width: 190px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.flip-prev { left: 0; justify-content: flex-start; padding-left: 0.4rem; }
+.flip-next { right: 0; justify-content: flex-end; padding-right: 0.4rem; }
+.flip-zone::before {
+  font-family: var(--font-ui);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink-light);
+  width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(251, 246, 238, 0.82);
+  border-radius: 100px;
+  box-shadow: 0 2px 10px rgba(42, 33, 24, 0.12);
+}
+.flip-prev::before { content: "\2039"; }
+.flip-next::before { content: "\203A"; }
+.flip-zone:hover, .flip-zone:focus-visible { opacity: 1; }
+.flip-zone:focus { outline: none; }
+.flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) {
+  /* touch: show a faint resting hint so kids know the edges are tappable */
+  .flip-zone:not([disabled]) { opacity: 0.5; }
+}
+
+/* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
+.stage { perspective: 2200px; }
+.page {
+  transform-origin: center center;
+  transform: rotateY(0);
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+.page.active { opacity: 1; pointer-events: auto; transform: rotateY(0) translateX(0); }
+.page.enter-fwd  { transition: none; opacity: 0; transform-origin: right center; transform: rotateY(-15deg) translateX(7%); }
+.page.enter-back { transition: none; opacity: 0; transform-origin: left center;  transform: rotateY(15deg)  translateX(-7%); }
+.page.turn-fwd   { opacity: 0; transform-origin: left center;  transform: rotateY(36deg)  translateX(-4%); }
+.page.turn-back  { opacity: 0; transform-origin: right center; transform: rotateY(-36deg) translateX(4%); }
+.page::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.55s ease;
+}
+.page.turn-fwd::after  { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0) 55%, rgba(42,33,24,0.16)); }
+.page.turn-back::after { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0.16), rgba(42,33,24,0) 45%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.active,
+  .page.enter-fwd, .page.enter-back,
+  .page.turn-fwd, .page.turn-back {
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
+  .page::after { display: none !important; }
+}
+
+/* ── COVER REDESIGN: centered wordmark + cover art ─────────────── */
+.book-topbar .topbar-wordmark {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 26px; width: auto; display: block;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .book-topbar .topbar-wordmark { height: 22px; }
+}
+.cover-page .page-inner {
+  justify-content: flex-start;
+  padding-top: 3vh;
+  gap: 1.5rem;
+}
+.cover-art {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 10px 36px rgba(42, 33, 24, 0.14);
+}
+.cover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 600px) {
+  .cover-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .cover-art { max-width: 100%; }
+  .cover-page .page-inner { padding-top: 2vh; }
+}
+
+/* ── DUSK THEME (reader) — night sky + light text/chrome ─────── */
+body { background: linear-gradient(180deg, #1C2A52 0%, #46396A 52%, #B97E7A 100%) !important; background-attachment: fixed !important; }
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#starfield .twk { position: absolute; opacity: 0.16; will-change: opacity, transform; }
+@keyframes fwTw { 0%,40%,100% { opacity: 0.14; transform: scale(0.6); } 47% { opacity: 1; transform: scale(1); } 54% { opacity: 0.14; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { #starfield .twk { animation: none !important; opacity: 0.5 !important; } }
+
+.stage { z-index: 1; }
+.book-topbar { background: rgba(24, 34, 66, 0.74) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+.book-topbar .back-link .back-label { color: #E7DFF3 !important; }
+.page-counter { color: #CFC6DD !important; }
+.progress-track { background: rgba(255,255,255,0.10) !important; }
+
+.page-text, .page-text p { color: #EFE7DD !important; }
+.cover-title { color: #FBF4EC !important; }
+.cover-tagline { color: #E6DAE4 !important; }
+.cover-kicker { color: #E9BD93 !important; }
+.end-mark { color: #E9BD93 !important; }
+.end-line { color: #E6DAE4 !important; }
+
+.nav-bar { background: rgba(24, 34, 66, 0.78) !important; border-top-color: rgba(255,255,255,0.12) !important; }
+.nav-btn.prev { background: rgba(255,255,255,0.12) !important; color: #EADFF0 !important; }
+.nav-btn.next { background: #F3ECE2 !important; color: #2A2342 !important; }
+.nav-center { color: #CFC6DD !important; }
+.nav-center .dot { background: rgba(255,255,255,0.28) !important; }
+.nav-center .dot.active { background: #E9BD93 !important; }
+</style>
+</head>
+<body>
+<div id="starfield" aria-hidden="true"></div>
+
+<div class="book-topbar">
+  <a href="fablewick-landing.html" class="back-link" aria-label="Fablewick home"><img class="brand-mark" src="../src/assets/fablewick-mark.png" alt="Fablewick"><span class="back-label">Library</span></a>
+  
+  <div class="page-counter" id="pageCounter">1 / 7</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage" role="main">
+  <button class="flip-zone flip-prev" id="flipPrev" type="button" aria-label="Previous page" tabindex="-1"></button>
+  <button class="flip-zone flip-next" id="flipNext" type="button" aria-label="Next page" tabindex="-1"></button>
+
+  <!-- PAGE 1: COVER -->
+  <section class="page cover-page active" data-page="1">
+    <div class="page-inner">
+      <h1 class="cover-title">The Hundred-Year Stone</h1>
+      <div class="cover-art"><img src="../src/assets/pages/the-hundred-year-stone/cover.jpg" alt=""></div>
+      <p class="cover-tagline">A story for ages 5–9 about how you can be scared and still try</p>
+    </div>
+  </section>
+
+  <!-- PAGE 2: The stone and the river -->
+  <section class="page" data-page="2">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-hundred-year-stone/page-01.jpg" alt="A round mossy stone sitting by the side of a small rushing river" onerror="this.onerror=null;this.src='../src/assets/pages/the-hundred-year-stone/page-01.jpg'">
+      </div>
+      <div class="page-text">
+        <p>There was a stone by the side of a small river. It had sat in that exact spot for a hundred years. Maybe more. Moss grew thick on its head, dotted with tiny wildflowers.</p>
+        <p>Every day, the stone watched the river. The river rushed. The river splashed. The river carried leaves and twigs and quick silver fish away to somewhere else.</p>
+        <p>The stone had never been anywhere else.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: The fish's invitation -->
+  <section class="page" data-page="3">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-hundred-year-stone/page-02.jpg" alt="A small silver fish talking to the mossy stone at the river's edge" onerror="this.onerror=null;this.src='../src/assets/pages/the-hundred-year-stone/page-02.jpg'">
+      </div>
+      <div class="page-text">
+        <p>One bright afternoon, a small silver fish stopped beside the stone.</p>
+        <p>“Do you ever want to come along?” she asked, flicking her tail toward the rushing water. “There’s a meadow down there. A willow tree. A quiet pool with frogs in it.”</p>
+        <p>“I think I do want to come,” said the stone softly. “But I am scared.”</p>
+        <p>“You can be scared,” said the fish, “and still come. Those are not opposite things.”</p>
+        <p>Then — flick! — she was gone.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4: Scared and still come + three days of thinking -->
+  <section class="page" data-page="4">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-hundred-year-stone/page-03.jpg" alt="The mossy stone alone by the river under a quiet starry night, thinking" onerror="this.onerror=null;this.src='../src/assets/pages/the-hundred-year-stone/page-03.jpg'">
+      </div>
+      <div class="page-text">
+        <p>The stone thought about it for three whole days.</p>
+        <p>It thought through a sunny morning. It thought through a misty evening. It thought through a long, starry night, when the dark river glimmered in the moonlight and sounded like a hundred small voices, all saying come, come, come.</p>
+        <p>The stone thought, and thought, and thought.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5: The rain + the stone lets go -->
+  <section class="page" data-page="5">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-hundred-year-stone/page-04.jpg" alt="Rain falling as the swollen river rises around the stone and begins to lift it" onerror="this.onerror=null;this.src='../src/assets/pages/the-hundred-year-stone/page-04.jpg'">
+      </div>
+      <div class="page-text">
+        <p>On the fourth day, the rain came.</p>
+        <p>It rained all afternoon. The river grew bigger. The river grew stronger. The water climbed the bank until it reached the stone, and pushed, gently. Then a little more.</p>
+        <p>The stone could hold on. The stone could stay. The stone was very, very scared.</p>
+        <p>And the stone let go.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 6: The quiet pool + I am okay -->
+  <section class="page" data-page="6">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-hundred-year-stone/page-05.jpg" alt="The stone resting in a quiet green pool beneath a willow tree, a frog sitting on top" onerror="this.onerror=null;this.src='../src/assets/pages/the-hundred-year-stone/page-05.jpg'">
+      </div>
+      <div class="page-text">
+        <p>The river caught the stone, soft as a hand, and rolled it down the bank, around the bend, past the willow tree, all the way to a quiet green pool where three frogs were arguing about a lily pad.</p>
+        <p>The light fell through the willow leaves in soft green stripes. The stone looked back, all the way it had come.</p>
+        <p>“That was very, very scary,” said the stone.</p>
+        <p>A frog hopped up and sat on its mossy head.</p>
+        <p>“And I am okay.”</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 7: END -->
+  <section class="page end-page" data-page="7">
+    <div class="page-inner">
+      <div class="end-mark">— The End —</div>
+      <p class="end-line">Trying something new is scary, and you can be scared and still try.</p>
+      <a href="fablewick-landing.html" class="end-back-btn">← Back to the library</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar" role="navigation" aria-label="Story pages">
+  <button class="nav-btn prev" id="prevBtn" disabled aria-label="Previous page">← Back</button>
+  <div class="nav-center">
+    <span class="dots" id="dots"></span>
+    <span id="pageLabel" aria-live="polite">Page 1 of 7</span>
+  </div>
+  <button class="nav-btn next" id="nextBtn" aria-label="Next page">Next →</button>
+</div>
+
+<script>
+// ─── i18n data (inlined to avoid file:// fetch issues) ────────
+const I18N = {"pageTexts": {"en": ["There was a stone by the side of a small river. It had sat in that exact spot for a hundred years. Maybe more. Moss grew thick on its head, dotted with tiny wildflowers.\n\nEvery day, the stone watched the river. The river rushed. The river splashed. The river carried leaves and twigs and quick silver fish away to somewhere else.\n\nThe stone had never been anywhere else.", "One bright afternoon, a small silver fish stopped beside the stone.\n\n“Do you ever want to come along?” she asked, flicking her tail toward the rushing water. “There’s a meadow down there. A willow tree. A quiet pool with frogs in it.”\n\n“I think I do want to come,” said the stone softly. “But I am scared.”\n\n“You can be scared,” said the fish, “and still come. Those are not opposite things.”\n\nThen — flick! — she was gone.", "The stone thought about it for three whole days.\n\nIt thought through a sunny morning. It thought through a misty evening. It thought through a long, starry night, when the dark river glimmered in the moonlight and sounded like a hundred small voices, all saying come, come, come.\n\nThe stone thought, and thought, and thought.", "On the fourth day, the rain came.\n\nIt rained all afternoon. The river grew bigger. The river grew stronger. The water climbed the bank until it reached the stone, and pushed, gently. Then a little more.\n\nThe stone could hold on. The stone could stay. The stone was very, very scared.\n\nAnd the stone let go.", "The river caught the stone, soft as a hand, and rolled it down the bank, around the bend, past the willow tree, all the way to a quiet green pool where three frogs were arguing about a lily pad.\n\nThe light fell through the willow leaves in soft green stripes. The stone looked back, all the way it had come.\n\n“That was very, very scary,” said the stone.\n\nA frog hopped up and sat on its mossy head.\n\n“And I am okay.”"], "hi": ["एक छोटी नदी के किनारे एक पत्थर था. पत्थर ठीक उसी जगह सौ साल से बैठा था, शायद उससे भी ज़्यादा. पत्थर पर काई उग आई थी. पत्थर का आकार आरामदायक था.\n\nहर दिन, पत्थर नदी को देखता. नदी बहती. नदी छप-छप करती. नदी पत्तियाँ, टहनियाँ, और कभी-कभी कोई मछली जहाँ भी नदी जा रही होती वहाँ ले जाती.\n\nपत्थर कभी कहीं नहीं गया था.", "एक दोपहर, एक छोटी चाँदी जैसी मछली पत्थर के पास रुकी.\n\n\"तुम हमेशा यहीं रहते हो,\" मछली ने कहा.\n\n\"मैं हमेशा यहीं रहता हूँ,\" पत्थर ने हामी भरी.\n\n\"क्या तुम कभी साथ चलना चाहते हो?\" मछली ने पूछा, अपनी पूँछ बहते पानी की ओर हिलाते हुए. \"नीचे अच्छा है. एक घास का मैदान है. और एक विलो का पेड़. और एक जगह जहाँ नदी एक छोटा तालाब बनाती है जिसमें मेंढक हैं.\"\n\nपत्थर ने एक लंबी देर तक कुछ नहीं कहा.\n\nफिर पत्थर ने बहुत धीरे कहा, \"मुझे लगता है मैं आना चाहता हूँ. लेकिन मुझे डर लगता है. मैं हमेशा यहीं रहा हूँ.\"", "मछली ने इस बारे में सोचा. मछली बहुत बूढ़ी नहीं थी, लेकिन मछली दयालु थी.\n\n\"तुम डर सकते हो,\" मछली ने कहा. \"तुम डर सकते हो और फिर भी आ सकते हो. ये उल्टी बातें नहीं हैं.\"\n\nमछली तैरकर चली गई.\n\nपत्थर ने मछली की बात के बारे में तीन और दिनों तक सोचा. पत्थर ने एक धूप वाली सुबह के दौरान इसके बारे में सोचा. पत्थर ने एक लंबी, शांत रात के दौरान इसके बारे में सोचा जब नदी सौ छोटी आवाज़ों जैसी सुनाई दे रही थी.", "और फिर, चौथे दिन, बारिश आई.\n\nबारिश पूरी दोपहर आती रही. नदी बड़ी हो गई. नदी ताकतवर हो गई. पानी कई सालों में पहली बार किनारे पर इतना ऊँचा आया और फिर उसने पत्थर को छुआ. और फिर उसने पत्थर को धीरे से धकेला. और फिर थोड़ा और.\n\nपत्थर ने पानी को उसे उठाने की कोशिश करते महसूस किया. पत्थर चुन सकता था कि गहरे जम जाए, पकड़े रहे, रुक जाए.\n\nपत्थर बहुत, बहुत डरा हुआ था.\n\nलेकिन पत्थर को याद आया जो मछली ने कहा था.\n\nपत्थर ने अपने आप को छोड़ दिया.", "नदी ने पत्थर को पकड़ लिया, हाथ की तरह नरम, और पत्थर को लुढ़काया धीरे, कोमलता से किनारे पर, एक मोड़ के चारों ओर, एक विलो के पेड़ के पास से, एक घास के मैदान के पास से, सीधा एक शांत तालाब तक जहाँ, जैसा मछली ने कहा था, तीन मेंढक एक कमल के पत्ते के बारे में बहस कर रहे थे.\n\nपत्थर वहीं रुक गया. यह एक अच्छी जगह थी. रोशनी विलो के पत्तों से नरम हरी धारियों में आ रही थी.\n\nपत्थर ने पीछे देखा, जिस रास्ते से वो आया था.\n\n\"वो,\" पत्थर ने ज़्यादातर अपने आप से कहा, \"बहुत, बहुत डरावना था.\"\n\nएक मेंढक पत्थर पर कूदा और वहाँ बैठ गया.\n\n\"और,\" पत्थर ने कहा, \"मैं ठीक हूँ.\""], "gu": ["એક નાની નદીની કિનારે એક પથ્થર હતો. પથ્થર એ જ ચોક્કસ જગ્યાએ સો વર્ષથી બેઠો હતો, કદાચ વધારે. પથ્થર પર શેવાળ ઊગ્યું હતું. પથ્થરનો આકાર આરામદાયક હતો.\n\nદરરોજ, પથ્થર નદીને જોતો. નદી વહેતી. નદી છપાક કરતી. નદી પાંદડાં, ટ્વિગ્સ, અને ક્યારેક માછલી જ્યાં પણ નદી જતી ત્યાં લઈ જતી.\n\nપથ્થર ક્યારેય ક્યાંય ગયો ન હતો.", "એક બપોરે, એક નાની ચાંદી જેવી માછલી પથ્થર પાસે અટકી.\n\n\"તું હંમેશા અહીં હોય છે,\" માછલીએ કહ્યું.\n\n\"હું હંમેશા અહીં હોઉં છું,\" પથ્થરે સહમતી દર્શાવી.\n\n\"શું તું ક્યારેય સાથે આવવા માગે છે?\" માછલીએ પૂછ્યું, વહેતા પાણી તરફ પૂંછડી હલાવતાં. \"નીચે સારું છે. એક ઘાસનું મેદાન છે. અને એક વિલોનું વૃક્ષ. અને એક જગ્યા જ્યાં નદી એક નાનો તળાવ બનાવે છે જેમાં દેડકાં છે.\"\n\nપથ્થરે લાંબા સમય સુધી કંઈ કહ્યું નહીં.\n\nપછી પથ્થરે ખૂબ ધીમેથી કહ્યું, \"મને લાગે છે કે હું આવવા માગું છું. પણ મને ડર લાગે છે. હું હંમેશા અહીં જ રહ્યો છું.\"", "માછલીએ આ વિશે વિચાર્યું. માછલી ખૂબ વૃદ્ધ ન હતી, પણ માછલી દયાળુ હતી.\n\n\"તું ડરી શકે છે,\" માછલીએ કહ્યું. \"તું ડરી શકે છે અને છતાં આવી શકે છે. એ વિરોધી વસ્તુઓ નથી.\"\n\nમાછલી તરીને દૂર જતી રહી.\n\nપથ્થરે માછલીએ જે કહ્યું તેના વિશે ત્રણ વધુ દિવસ વિચાર્યું. પથ્થરે એક તડકાળી સવારે તે વિશે વિચાર્યું. પથ્થરે એક લાંબી, શાંત રાતે તે વિશે વિચાર્યું જ્યારે નદી સો નાના અવાજો જેવી લાગતી હતી.", "અને પછી, ચોથા દિવસે, વરસાદ આવ્યો.\n\nવરસાદ આખી બપોર પડ્યો. નદી મોટી થઈ. નદી મજબૂત થઈ. પાણી કિનારે ઘણાં વર્ષોમાં પહેલી વાર આટલું ઊંચું આવ્યું અને પછી તેણે પથ્થરને સ્પર્શ કર્યો. અને પછી તેણે પથ્થરને ધીમેથી ધક્કો માર્યો. અને પછી થોડો વધારે.\n\nપથ્થરે પાણીને તેને ઊંચકવાનો પ્રયત્ન કરતું અનુભવ્યું. પથ્થર પસંદ કરી શકતો હતો કે ઊંડે ખૂંપી જાય, પકડી રાખે, રહે.\n\nપથ્થર ખૂબ, ખૂબ ડરી ગયો હતો.\n\nપણ પથ્થરને માછલીએ જે કહ્યું હતું તે યાદ આવ્યું.\n\nપથ્થરે પોતાને છોડી દીધો.", "નદીએ પથ્થરને પકડ્યો, હાથની જેમ નરમ, અને પથ્થરને ગબડાવ્યો ધીમે, કોમળતાથી કિનારે, એક વળાંકની આસપાસ, એક વિલોના વૃક્ષ પાસેથી, એક ઘાસના મેદાન પાસેથી, સીધો એક શાંત તળાવ સુધી જ્યાં, જેમ માછલીએ કહ્યું હતું, ત્રણ દેડકાં એક કમળના પાંદડા વિશે દલીલ કરી રહ્યાં હતાં.\n\nપથ્થર ત્યાં અટક્યો. એ સારી જગ્યા હતી. પ્રકાશ વિલોનાં પાંદડાંમાંથી નરમ લીલા પટ્ટાઓમાં આવતો હતો.\n\nપથ્થરે પાછળ જોયું, જે રસ્તે તે આવ્યો હતો.\n\n\"એ,\" પથ્થરે મોટેભાગે પોતાને કહ્યું, \"ખૂબ, ખૂબ ડરામણું હતું.\"\n\nએક દેડકો પથ્થર પર કૂદ્યો અને ત્યાં બેઠો.\n\n\"અને,\" પથ્થરે કહ્યું, \"હું બરાબર છું.\""], "es": ["Había una piedra al lado de un pequeño río. La piedra había estado sentada en ese mismo lugar durante cien años, tal vez más. El musgo había crecido sobre la piedra. La piedra tenía una forma cómoda.\n\nCada día, la piedra miraba el río. El río corría. El río salpicaba. El río llevaba hojas y ramitas y algún pez ocasional adonde fuera que iba el río.\n\nLa piedra nunca había estado en ninguna parte.", "Una tarde, un pequeño pez plateado se detuvo cerca de la piedra.\n\n\"Siempre estás aquí,\" dijo el pez.\n\n\"Siempre estoy aquí,\" coincidió la piedra.\n\n\"¿Alguna vez has querido venir conmigo?\" preguntó el pez, agitando su cola hacia el agua corriente. \"Es lindo allá abajo. Hay un prado. Y un sauce. Y un lugar donde el río forma una pequeña charca que tiene ranas.\"\n\nLa piedra no dijo nada durante un largo rato.\n\nLuego la piedra dijo, muy bajito, \"Creo que sí quiero ir. Pero tengo miedo. Siempre he estado aquí.\"", "El pez pensó en esto. El pez no era un pez muy viejo, pero el pez era amable.\n\n\"Puedes tener miedo,\" dijo el pez. \"Puedes tener miedo y aun así venir. Esas no son cosas opuestas.\"\n\nEl pez se fue nadando.\n\nLa piedra pensó en lo que había dicho el pez durante tres días más. La piedra pensó en ello durante una mañana soleada. La piedra pensó en ello durante una larga y silenciosa noche en que el río sonaba como cien vocecitas.", "Y entonces, al cuarto día, llegó la lluvia.\n\nLa lluvia cayó toda la tarde. El río creció. El río se hizo más fuerte. El agua subió más alto por la orilla de lo que lo había hecho en muchos años y entonces tocó la piedra. Y entonces empujó la piedra, suavemente. Y entonces un poco más.\n\nLa piedra sintió que el agua intentaba levantarla. La piedra podía elegir afianzarse, aferrarse, quedarse.\n\nLa piedra tenía mucho, mucho miedo.\n\nPero la piedra recordó lo que había dicho el pez.\n\nLa piedra se soltó.", "El río atrapó la piedra, suave como una mano, e hizo rodar la piedra despacio, suavemente por la orilla, alrededor de un recodo, junto a un sauce, junto a un prado, hasta llegar a una charca tranquila donde, tal como había dicho el pez, tres ranas estaban discutiendo sobre una hoja de nenúfar.\n\nLa piedra se detuvo allí. Era un buen lugar. La luz entraba por las hojas del sauce en suaves franjas verdes.\n\nLa piedra miró hacia atrás, por el camino que había venido.\n\n\"Eso,\" dijo la piedra, principalmente para sí misma, \"fue muy, muy aterrador.\"\n\nUna rana saltó sobre la piedra y se sentó allí.\n\n\"Y,\" dijo la piedra, \"estoy bien.\""], "fr": ["Il y avait une pierre au bord d'une petite rivière. La pierre était restée à cet endroit exact pendant cent ans, peut-être plus. De la mousse avait poussé sur la pierre. La pierre avait une forme confortable.\n\nChaque jour, la pierre regardait la rivière. La rivière coulait. La rivière éclaboussait. La rivière emportait des feuilles et des brindilles et le poisson occasionnel jusqu'où qu'elle aille.\n\nLa pierre n'avait jamais été nulle part.", "Un après-midi, un petit poisson argenté s'arrêta près de la pierre.\n\n\"Tu es toujours ici,\" dit le poisson.\n\n\"Je suis toujours ici,\" approuva la pierre.\n\n\"Tu n'as jamais voulu venir avec moi?\" demanda le poisson, agitant sa queue vers l'eau qui coulait. \"C'est joli en bas. Il y a une prairie. Et un saule. Et un endroit où la rivière fait un petit bassin avec des grenouilles dedans.\"\n\nLa pierre ne dit rien pendant un long moment.\n\nPuis la pierre dit, très doucement, \"Je crois que je veux bien venir. Mais j'ai peur. J'ai toujours été ici.\"", "Le poisson y pensa. Le poisson n'était pas un très vieux poisson, mais le poisson était gentil.\n\n\"Tu peux avoir peur,\" dit le poisson. \"Tu peux avoir peur et venir quand même. Ce ne sont pas des choses opposées.\"\n\nLe poisson s'éloigna en nageant.\n\nLa pierre pensa à ce qu'avait dit le poisson pendant trois jours de plus. La pierre y pensa pendant un matin ensoleillé. La pierre y pensa pendant une longue nuit silencieuse où la rivière sonnait comme cent petites voix.", "Et puis, le quatrième jour, la pluie vint.\n\nLa pluie tomba tout l'après-midi. La rivière grossit. La rivière devint plus forte. L'eau monta plus haut sur la berge qu'elle ne l'avait fait depuis bien des années et puis elle toucha la pierre. Et puis elle poussa la pierre, doucement. Et puis un peu plus.\n\nLa pierre sentit l'eau essayer de la soulever. La pierre pouvait choisir de s'enraciner, de s'accrocher, de rester.\n\nLa pierre avait très, très peur.\n\nMais la pierre se souvint de ce qu'avait dit le poisson.\n\nLa pierre se laissa aller.", "La rivière prit la pierre, douce comme une main, et fit rouler la pierre lentement, doucement le long de la berge, autour d'un méandre, près d'un saule, près d'une prairie, jusqu'à un bassin tranquille où, tout comme l'avait dit le poisson, trois grenouilles avaient une dispute à propos d'une feuille de nénuphar.\n\nLa pierre s'arrêta là. C'était un bon endroit. La lumière passait à travers les feuilles du saule en douces bandes vertes.\n\nLa pierre regarda en arrière, le chemin qu'elle avait fait.\n\n\"Ça,\" dit la pierre, surtout à elle-même, \"c'était très, très effrayant.\"\n\nUne grenouille sauta sur la pierre et s'assit là.\n\n\"Et,\" dit la pierre, \"je vais bien.\""]}, "covers": {"en": "A story for ages 5–9 about how you can be scared and still try", "hi": "उम्र 5–9 के लिए एक कहानी, इस बारे में कि तुम डर सकते हो और फिर भी कोशिश कर सकते हो", "gu": "ઉંમર 5–9 માટેની વાર્તા, એ વિશે કે તું ડરી શકે છે અને છતાં પ્રયત્ન કરી શકે છે", "es": "Una historia para edades 5–9 sobre cómo puedes tener miedo y aun así intentarlo", "fr": "Une histoire pour les 5–9 ans sur comment on peut avoir peur et essayer quand même"}, "ends": {"en": "Trying something new is scary, and you can be scared and still try.", "hi": "कुछ नया आज़माना डरावना होता है, और तुम डर सकते हो और फिर भी कोशिश कर सकते हो।", "gu": "કંઈક નવું અજમાવવું ડરામણું હોય છે, અને તું ડરી શકે છે અને છતાં પ્રયત્ન કરી શકે છે.", "es": "Probar algo nuevo da miedo, y puedes tener miedo y aun así intentarlo.", "fr": "Essayer quelque chose de nouveau fait peur, et on peut avoir peur et essayer quand même."}, "back_labels": {"en": "← Library", "hi": "← पुस्तकालय", "gu": "← પુસ્તકાલય", "es": "← Biblioteca", "fr": "← Bibliothèque"}, "end_btn": {"en": "← Back to the library", "hi": "← पुस्तकालय पर वापस", "gu": "← પુસ્તકાલય પર પાછા", "es": "← Volver a la biblioteca", "fr": "← Retour à la bibliothèque"}, "titles": {"en": "The Hundred-Year Stone", "hi": "सौ साल का पत्थर", "gu": "સો વર્ષનો પથ્થર", "es": "La Piedra de Cien Años", "fr": "La Pierre de Cent Ans"}, "kickers": {"en": "Fablewick", "hi": "फेबलविक", "gu": "ફેબલવિક", "es": "Fablewick", "fr": "Fablewick"}, "end_marks": {"en": "— The End —", "hi": "— समाप्त —", "gu": "— સમાપ્ત —", "es": "— Fin —", "fr": "— Fin —"}, "nav_prev": {"en": "← Back", "hi": "← पीछे", "gu": "← પાછળ", "es": "← Atrás", "fr": "← Retour"}, "nav_next": {"en": "Next →", "hi": "आगे →", "gu": "આગળ →", "es": "Siguiente →", "fr": "Suivant →"}, "page_label": {"en": "Page {n} of {t}", "hi": "पृष्ठ {n} / {t}", "gu": "પૃષ્ઠ {n} / {t}", "es": "Página {n} de {t}", "fr": "Page {n} sur {t}"}};
+
+// Read persisted language from the landing page's localStorage
+const LANG_KEY = 'fablewick.lang';
+const SUPPORTED_LANGS = ['en', 'hi', 'gu', 'es', 'fr'];
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return SUPPORTED_LANGS.includes(saved) ? saved : 'en';
+  } catch (e) { return 'en'; }
+})();
+
+// Apply translations on page load
+document.addEventListener('DOMContentLoaded', () => {
+  applyLanguage(currentLang);
+});
+
+function applyLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) lang = 'en';
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Cover tagline + end line + back labels
+  const coverTagline = document.querySelector('.cover-tagline');
+  if (coverTagline) coverTagline.textContent = I18N.covers[lang] || I18N.covers.en;
+
+  const endLine = document.querySelector('.end-line');
+  if (endLine) endLine.textContent = I18N.ends[lang] || I18N.ends.en;
+
+  const backLabel = document.querySelector('.book-topbar .back-link .back-label');
+  if (backLabel) backLabel.textContent = (I18N.back_labels[lang] || I18N.back_labels.en).replace(/^[←\s]+/, '');
+
+  const endBtn = document.querySelector('.end-back-btn');
+  if (endBtn) endBtn.textContent = I18N.end_btn[lang] || I18N.end_btn.en;
+
+  // Cover title + kicker, end mark, topbar book name, document title — native script
+  const coverTitle = document.querySelector('.cover-title');
+  if (coverTitle && I18N.titles) coverTitle.textContent = I18N.titles[lang] || I18N.titles.en;
+
+  const coverKicker = document.querySelector('.cover-kicker');
+  if (coverKicker && I18N.kickers) coverKicker.textContent = I18N.kickers[lang] || I18N.kickers.en;
+
+  const endMark = document.querySelector('.end-mark');
+  if (endMark && I18N.end_marks) endMark.textContent = I18N.end_marks[lang] || I18N.end_marks.en;
+
+  // topbar shows the Fablewick wordmark (image) — always English, never translated
+  if (I18N.titles) document.title = (I18N.titles[lang] || I18N.titles.en) + ' — Fablewick';
+
+  const prevB = document.getElementById('prevBtn');
+  if (prevB && I18N.nav_prev) prevB.textContent = I18N.nav_prev[lang] || I18N.nav_prev.en;
+  const nextB = document.getElementById('nextBtn');
+  if (nextB && I18N.nav_next) nextB.textContent = I18N.nav_next[lang] || I18N.nav_next.en;
+
+  if (typeof updateUI === 'function') updateUI();
+
+  // Page-by-page story text — pages with class .image-page or just .page (not cover/end)
+  // Use a fixed 5-page mapping: the 5 content pages between cover and end
+  const contentPages = Array.from(document.querySelectorAll('.page'))
+    .filter(p => !p.classList.contains('cover-page') && !p.classList.contains('end-page'));
+  const pageTextsForLang = I18N.pageTexts[lang] || I18N.pageTexts.en;
+  contentPages.forEach((pageEl, idx) => {
+    const textEl = pageEl.querySelector('.page-text');
+    if (!textEl || !pageTextsForLang[idx]) return;
+    // Split into <p> paragraphs by double newline
+    const html = pageTextsForLang[idx]
+      .split(/\n\s*\n/)
+      .map(p => '<p>' + escapeForHtml(p.trim()) + '</p>')
+      .join('');
+    textEl.innerHTML = html;
+  });
+}
+
+function escapeForHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+const pages = Array.from(document.querySelectorAll('.page'));
+const total = pages.length;
+let currentIdx = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipPrev = document.getElementById('flipPrev');
+const flipNext = document.getElementById('flipNext');
+const pageCounter = document.getElementById('pageCounter');
+const pageLabel = document.getElementById('pageLabel');
+const progressFill = document.getElementById('progressFill');
+const dotsEl = document.getElementById('dots');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.dataset.idx = i;
+  d.setAttribute('aria-label', 'Go to page ' + (i + 1));
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function goTo(newIdx) {
+  if (newIdx < 0 || newIdx >= total || newIdx === currentIdx) return;
+  const dir = newIdx > currentIdx ? 1 : -1;
+  const oldPage = pages[currentIdx];
+  const newPage = pages[newIdx];
+
+  // incoming page: preset on the side it enters from (no transition for the preset)
+  newPage.classList.remove('active', 'turn-fwd', 'turn-back', 'enter-fwd', 'enter-back');
+  newPage.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+  void newPage.offsetWidth;            // commit the preset before animating
+
+  // outgoing page turns away like a leaf
+  oldPage.classList.remove('active');
+  oldPage.classList.add(dir > 0 ? 'turn-fwd' : 'turn-back');
+
+  // incoming page settles flat
+  newPage.classList.remove('enter-fwd', 'enter-back');
+  newPage.classList.add('active');
+
+  setTimeout(() => {
+    oldPage.classList.remove('turn-fwd', 'turn-back', 'exit-left');
+    const txt = newPage.querySelector('.page-text');
+    if (txt) txt.scrollTop = 0;
+  }, 600);
+
+  currentIdx = newIdx;
+  updateUI();
+}
+
+function updateUI() {
+  const n = currentIdx + 1;
+  pageCounter.textContent = `${n} / ${total}`;
+  const labelTmpl = (I18N.page_label && (I18N.page_label[currentLang] || I18N.page_label.en)) || 'Page {n} of {t}';
+  pageLabel.textContent = labelTmpl.replace('{n}', n).replace('{t}', total);
+  progressFill.style.width = (n / total * 100) + '%';
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === total - 1;
+  if (flipPrev) flipPrev.disabled = currentIdx === 0;
+  if (flipNext) flipNext.disabled = currentIdx === total - 1;
+  var _wm = document.querySelector('.topbar-wordmark');
+  if (_wm) _wm.style.display = currentIdx === 0 ? '' : 'none';
+  Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+if (flipPrev) flipPrev.addEventListener('click', () => goTo(currentIdx - 1));
+if (flipNext) flipNext.addEventListener('click', () => goTo(currentIdx + 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { goTo(currentIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { goTo(currentIdx - 1); e.preventDefault(); }
+  if (e.key === 'Escape') { window.location.href = 'fablewick-landing.html'; }
+});
+
+updateUI();
+
+// ─── DUSK THEME starfield (reader) ────────────────────────────
+(function () {
+  var sky = document.getElementById('starfield');
+  if (!sky) return;
+  var spark = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z" fill="#FFF6E0"/></svg>';
+  var n = Math.max(30, Math.min(80, Math.round(window.innerWidth * window.innerHeight / 16000)));
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('div');
+    s.className = 'twk';
+    var size = (3 + Math.random() * 6).toFixed(1);
+    s.style.left = (Math.random() * 99).toFixed(1) + '%';
+    s.style.top = (Math.random() * 92).toFixed(1) + '%';
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.animation = 'fwTw ' + (2.4 + Math.random() * 3.2).toFixed(2) + 's ease-in-out ' + (Math.random() * 6).toFixed(2) + 's infinite';
+    s.innerHTML = spark;
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

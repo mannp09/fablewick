@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StoryGenerator from '../components/StoryGenerator';
+---
+
+<BaseLayout title="Create a story · Fablewick">
+  <section class="max-w-3xl mx-auto px-6 pt-12 pb-12">
+    <h1 class="text-4xl md:text-5xl leading-tight mb-4" style="font-family: var(--font-display); font-weight: 500;">Make a story.</h1>
+    <p class="text-lg mb-10" style="color: var(--color-ink-soft);">
+      Tell us what the story should be about. We'll ask your reader's level next, then write something
+      just for them.
+    </p>
+    <StoryGenerator client:load />
+  </section>
+</BaseLayout>

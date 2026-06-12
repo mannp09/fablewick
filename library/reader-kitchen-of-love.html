@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen of Love — Fablewick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #FBF6EE;
+  --cream-dark: #F0E8DA;
+  --ink: #2A2118;
+  --ink-light: #5A4D3E;
+  --amber: #D4925E;
+  --amber-light: #ECC9A8;
+  --coral: #D67A6E;
+  --sage: #8FA68A;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+  --radius-cozy: 28px;
+  --transition: 0.35s ease;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ───────────────────────────── */
+.book-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: 52px;
+}
+.book-topbar .back-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  transition: background var(--transition), color var(--transition);
+}
+.book-topbar .back-link:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.book-topbar .book-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.book-topbar .page-counter {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+}
+
+/* ── PROGRESS BAR ──────────────────────── */
+.progress-track {
+  position: fixed;
+  top: 52px; left: 0; right: 0;
+  height: 3px;
+  background: rgba(42, 33, 24, 0.06);
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--coral));
+  width: 20%;
+  transition: width 0.5s ease;
+}
+
+/* ── PAGE STAGE ──────────────────────────── */
+.stage {
+  position: fixed;
+  top: 55px; left: 0;
+  right: 0; bottom: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+.page-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Image area */
+.page-illustration {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 8px 32px rgba(42, 33, 24, 0.10);
+}
+.page-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.page-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.page-text p { margin-bottom: 1rem; }
+.page-text p:last-child { margin-bottom: 0; }
+
+/* Wider screens: image left, text right */
+@media (min-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    height: 100%;
+  }
+  .page-illustration {
+    aspect-ratio: 16 / 9;
+  }
+  .page-text {
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Tall screens: text first */
+@media (max-height: 600px) and (max-width: 899px) {
+  .page-illustration { aspect-ratio: 16 / 6; }
+  .page-text { font-size: 0.95rem; }
+}
+
+/* ── NAVIGATION ──────────────────────────── */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.15rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.prev {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-btn.prev:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(-2px);
+}
+.nav-btn.next {
+  background: var(--ink);
+  color: var(--cream);
+}
+.nav-btn.next:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateX(2px);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  letter-spacing: 0.14em;
+}
+.nav-center .dots {
+  display: inline-flex;
+  gap: 0.45rem;
+  vertical-align: middle;
+  margin-right: 0.65rem;
+}
+.nav-center .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(42, 33, 24, 0.18);
+  transition: background var(--transition), transform var(--transition);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-center .dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* ── COVER / END PAGES ──────────────────────── */
+.cover-page, .end-page {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.cover-page .page-inner, .end-page .page-inner {
+  grid-template-columns: 1fr !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.cover-kicker, .end-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1rem;
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  color: var(--ink-light);
+  max-width: 540px;
+  line-height: 1.6;
+}
+.end-mark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--amber);
+  margin-bottom: 1.5rem;
+}
+.end-line {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--ink-light);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.end-back-btn {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition), transform var(--transition);
+}
+.end-back-btn:hover {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.kbd-hint {
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 600px) { .kbd-hint { display: none; } }
+
+/* ── NAV UPGRADE: brand mark, flip zones, 3D page-turn ─────────── */
+.book-topbar .back-link { display: inline-flex; align-items: center; gap: 0.5rem; }
+.book-topbar .back-link .brand-mark {
+  height: 30px; width: auto; display: block; object-fit: contain;
+}
+.book-topbar .back-link .back-label { line-height: 1; }
+@media (max-width: 560px) {
+  .book-topbar .back-link .back-label { display: none; }
+  .book-topbar .back-link .brand-mark { height: 28px; }
+}
+
+/* Click-to-flip side gutters — over the page edges, clear of topbar + nav-bar */
+.flip-zone {
+  position: fixed;
+  top: 58px;
+  bottom: 4.75rem;
+  width: 24%;
+  max-width: 190px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.flip-prev { left: 0; justify-content: flex-start; padding-left: 0.4rem; }
+.flip-next { right: 0; justify-content: flex-end; padding-right: 0.4rem; }
+.flip-zone::before {
+  font-family: var(--font-ui);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink-light);
+  width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(251, 246, 238, 0.82);
+  border-radius: 100px;
+  box-shadow: 0 2px 10px rgba(42, 33, 24, 0.12);
+}
+.flip-prev::before { content: "\2039"; }
+.flip-next::before { content: "\203A"; }
+.flip-zone:hover, .flip-zone:focus-visible { opacity: 1; }
+.flip-zone:focus { outline: none; }
+.flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) {
+  /* touch: show a faint resting hint so kids know the edges are tappable */
+  .flip-zone:not([disabled]) { opacity: 0.5; }
+}
+
+/* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
+.stage { perspective: 2200px; }
+.page {
+  transform-origin: center center;
+  transform: rotateY(0);
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+.page.active { opacity: 1; pointer-events: auto; transform: rotateY(0) translateX(0); }
+.page.enter-fwd  { transition: none; opacity: 0; transform-origin: right center; transform: rotateY(-15deg) translateX(7%); }
+.page.enter-back { transition: none; opacity: 0; transform-origin: left center;  transform: rotateY(15deg)  translateX(-7%); }
+.page.turn-fwd   { opacity: 0; transform-origin: left center;  transform: rotateY(36deg)  translateX(-4%); }
+.page.turn-back  { opacity: 0; transform-origin: right center; transform: rotateY(-36deg) translateX(4%); }
+.page::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.55s ease;
+}
+.page.turn-fwd::after  { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0) 55%, rgba(42,33,24,0.16)); }
+.page.turn-back::after { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0.16), rgba(42,33,24,0) 45%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.active,
+  .page.enter-fwd, .page.enter-back,
+  .page.turn-fwd, .page.turn-back {
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
+  .page::after { display: none !important; }
+}
+
+/* ── COVER REDESIGN: centered wordmark + cover art ─────────────── */
+.book-topbar .topbar-wordmark {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 26px; width: auto; display: block;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .book-topbar .topbar-wordmark { height: 22px; }
+}
+.cover-page .page-inner {
+  justify-content: flex-start;
+  padding-top: 3vh;
+  gap: 1.5rem;
+}
+.cover-art {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 10px 36px rgba(42, 33, 24, 0.14);
+}
+.cover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 600px) {
+  .cover-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .cover-art { max-width: 100%; }
+  .cover-page .page-inner { padding-top: 2vh; }
+}
+
+/* ── DUSK THEME (reader) — night sky + light text/chrome ─────── */
+body { background: linear-gradient(180deg, #1C2A52 0%, #46396A 52%, #B97E7A 100%) !important; background-attachment: fixed !important; }
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#starfield .twk { position: absolute; opacity: 0.16; will-change: opacity, transform; }
+@keyframes fwTw { 0%,40%,100% { opacity: 0.14; transform: scale(0.6); } 47% { opacity: 1; transform: scale(1); } 54% { opacity: 0.14; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { #starfield .twk { animation: none !important; opacity: 0.5 !important; } }
+
+.stage { z-index: 1; }
+.book-topbar { background: rgba(24, 34, 66, 0.74) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+.book-topbar .back-link .back-label { color: #E7DFF3 !important; }
+.page-counter { color: #CFC6DD !important; }
+.progress-track { background: rgba(255,255,255,0.10) !important; }
+
+.page-text, .page-text p { color: #EFE7DD !important; }
+.cover-title { color: #FBF4EC !important; }
+.cover-tagline { color: #E6DAE4 !important; }
+.cover-kicker { color: #E9BD93 !important; }
+.end-mark { color: #E9BD93 !important; }
+.end-line { color: #E6DAE4 !important; }
+
+.nav-bar { background: rgba(24, 34, 66, 0.78) !important; border-top-color: rgba(255,255,255,0.12) !important; }
+.nav-btn.prev { background: rgba(255,255,255,0.12) !important; color: #EADFF0 !important; }
+.nav-btn.next { background: #F3ECE2 !important; color: #2A2342 !important; }
+.nav-center { color: #CFC6DD !important; }
+.nav-center .dot { background: rgba(255,255,255,0.28) !important; }
+.nav-center .dot.active { background: #E9BD93 !important; }
+</style>
+</head>
+<body>
+<div id="starfield" aria-hidden="true"></div>
+
+<div class="book-topbar">
+  <a href="fablewick-landing.html" class="back-link" aria-label="Fablewick home"><img class="brand-mark" src="../src/assets/fablewick-mark.png" alt="Fablewick"><span class="back-label">Library</span></a>
+  
+  <div class="page-counter" id="pageCounter">1 / 7</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage" role="main">
+  <button class="flip-zone flip-prev" id="flipPrev" type="button" aria-label="Previous page" tabindex="-1"></button>
+  <button class="flip-zone flip-next" id="flipNext" type="button" aria-label="Next page" tabindex="-1"></button>
+
+  <!-- PAGE 1: COVER -->
+  <section class="page cover-page active" data-page="1">
+    <div class="page-inner">
+      <h1 class="cover-title">Kitchen of Love</h1>
+      <div class="cover-art"><img src="../src/assets/pages/kitchen-of-love/cover.jpg" alt=""></div>
+      <p class="cover-tagline">A story for ages 5–8 about how love sounds like "did you eat?"</p>
+    </div>
+  </section>
+
+  <!-- PAGE 2: Setup + "Did you eat?" -->
+  <section class="page" data-page="2">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/kitchen-of-love/page-01.jpg" alt="Ba in her warm kitchen">
+      </div>
+      <div class="page-text">
+        <p>When you come to Ba's house, Ba does not say hello. Ba does not say how are you.</p>
+        <p>Ba leans out of the kitchen and says, "Did you eat?"</p>
+        <p>Every visit. Every time. That is Ba's hello.</p>
+        <p>"Yes, Ba. I ate before I came."</p>
+        <p>Ba nods, like that was the wrong answer, and disappears back into the kitchen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: Fruit appears + plate stays -->
+  <section class="page" data-page="3">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/kitchen-of-love/page-02.jpg" alt="A plate of cut fruit on the counter">
+      </div>
+      <div class="page-text">
+        <p>A few minutes later, fruit appears on the table.</p>
+        <p>It just appears — the way rain appears, the way morning appears. A mango sliced into long gold crescents, with a little fork beside it. A handful of pomegranate seeds, red as jewels. A cup of chai, still steaming.</p>
+        <p>"Ba, I'm not hungry."</p>
+        <p>The plate stays.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4: Doorway watch + the unannounced visit -->
+  <section class="page" data-page="4">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/kitchen-of-love/page-03.jpg" alt="Ba watching from the doorway">
+      </div>
+      <div class="page-text">
+        <p>So you eat it. Of course you eat it.</p>
+        <p>It is sweet and cold and exactly, perfectly ripe, because Ba checks the fruit every single morning and knows the very day it is ready.</p>
+        <p>Ba watches from the doorway. Just for a moment. Just long enough to see you take a bite.</p>
+        <p>Then Ba goes back to the kitchen, smiling a small smile you are not supposed to see.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5: Ba cutting alone + the realization -->
+  <section class="page" data-page="5">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/kitchen-of-love/page-04.jpg" alt="Ba cutting a mango alone in the kitchen">
+      </div>
+      <div class="page-text">
+        <p>Then one grey afternoon, you come over without calling. You step in quiet as a whisper.</p>
+        <p>Ba is in the kitchen and does not know you are there.</p>
+        <p>Ba is cutting a mango. Slowly. Carefully. The gold slices fall in a neat little row.</p>
+        <p>But nobody else is home. Nobody called. Nobody asked.</p>
+        <p>Ba is cutting fruit for whoever might come. Just in case.</p>
+        <p>And something quiet clicks into place, like the last piece of a puzzle.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 6: The hug + closing -->
+  <section class="page" data-page="6">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/kitchen-of-love/page-05.jpg" alt="The grandchild hugging Ba">
+      </div>
+      <div class="page-text">
+        <p>You cross the kitchen and wrap your arms around Ba from behind.</p>
+        <p>"I love you, Ba."</p>
+        <p>Ba goes very still. Ba's ears turn pink.</p>
+        <p>Ba doesn't say it back. Ba never has. That was never Ba's language.</p>
+        <p>Ba pats your hand — once, twice. Then Ba picks up the knife.</p>
+        <p>And Ba cuts another mango.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 7: END -->
+  <section class="page end-page" data-page="7">
+    <div class="page-inner">
+      <div class="end-mark">— The End —</div>
+      <p class="end-line">Some grandmothers love with words. Some love with mangoes. Both are the same kind of love.</p>
+      <a href="fablewick-landing.html" class="end-back-btn">← Back to the library</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar" role="navigation" aria-label="Story pages">
+  <button class="nav-btn prev" id="prevBtn" disabled aria-label="Previous page">← Back</button>
+  <div class="nav-center">
+    <span class="dots" id="dots"></span>
+    <span id="pageLabel" aria-live="polite">Page 1 of 7</span>
+  </div>
+  <button class="nav-btn next" id="nextBtn" aria-label="Next page">Next →</button>
+</div>
+
+<script>
+// ─── i18n data (inlined to avoid file:// fetch issues) ────────
+const I18N = {"pageTexts": {"en": ["When you come to Ba's house, Ba does not say hello. Ba does not say how are you.\n\nBa leans out of the kitchen and says, \"Did you eat?\"\n\nEvery visit. Every time. That is Ba's hello.\n\n\"Yes, Ba. I ate before I came.\"\n\nBa nods, like that was the wrong answer, and disappears back into the kitchen.", "A few minutes later, fruit appears on the table.\n\nIt just appears — the way rain appears, the way morning appears. A mango sliced into long gold crescents, with a little fork beside it. A handful of pomegranate seeds, red as jewels. A cup of chai, still steaming.\n\n\"Ba, I'm not hungry.\"\n\nThe plate stays.", "So you eat it. Of course you eat it.\n\nIt is sweet and cold and exactly, perfectly ripe, because Ba checks the fruit every single morning and knows the very day it is ready.\n\nBa watches from the doorway. Just for a moment. Just long enough to see you take a bite.\n\nThen Ba goes back to the kitchen, smiling a small smile you are not supposed to see.", "Then one grey afternoon, you come over without calling. You step in quiet as a whisper.\n\nBa is in the kitchen and does not know you are there.\n\nBa is cutting a mango. Slowly. Carefully. The gold slices fall in a neat little row.\n\nBut nobody else is home. Nobody called. Nobody asked.\n\nBa is cutting fruit for whoever might come. Just in case.\n\nAnd something quiet clicks into place, like the last piece of a puzzle.", "You cross the kitchen and wrap your arms around Ba from behind.\n\n\"I love you, Ba.\"\n\nBa goes very still. Ba's ears turn pink.\n\nBa doesn't say it back. Ba never has. That was never Ba's language.\n\nBa pats your hand — once, twice. Then Ba picks up the knife.\n\nAnd Ba cuts another mango."], "hi": ["बा हमेशा रसोई में रहती हैं।\n\nबस वहीं बा रहती हैं। दूसरी दादियाँ बैठक में बैठती हैं। दूसरी दादियाँ टीवी देखती हैं, या किताब पढ़ती हैं, या दोपहर की धूप में आराम करती हैं। बा रसोई में रहती हैं। बा हमेशा से रसोई में रही हैं।\n\nजब तुम बा के घर आते हो, बा सबसे पहले \"नमस्ते\" नहीं कहतीं और \"कैसे हो\" भी नहीं कहतीं।\n\nबा पहली बात यह कहती हैं: \"तुमने खाना खाया?\"\n\nहर एक बार।", "तुम हाँ कहते हो, क्योंकि तुमने शायद खा ही लिया होगा। तुमने आने से पहले खा लिया था। तुम्हें भूख भी नहीं है।\n\nबा सिर हिलाती हैं। बा वापस रसोई में चली जाती हैं।\n\nकुछ मिनट बाद, मेज़ पर फल आ जाते हैं। एक आम, लम्बे सुनहरे टुकड़ों में कटा हुआ। या केले, बीच से कटे, एक प्लेट में सजे हुए। या जो भी बा के पास हो — अमरूद जब उनका मौसम हो, पपीता जब बा को कोई अच्छा वाला मिल जाए।\n\nप्लेट वहीं रहती है। बस अचानक आ जाती है।\n\n\"बा, मुझे भूख नहीं है।\"\n\nबा कुछ नहीं कहतीं। बा वापस रसोई में चली जाती हैं। प्लेट वहीं रहती है।\n\nतुम खा लेते हो। बेशक खाते हो। मीठा है, ठंडा है, बिल्कुल पका हुआ है, क्योंकि बा हर दिन फल देखती हैं और जानती हैं कि वह कब तैयार होगा।", "बा दरवाज़े से देखती हैं। बस एक पल के लिए। फिर वापस चली जाती हैं।\n\nयह हर मुलाक़ात पर होता है। तुम्हें आदत हो गई है। तुम मन ही मन थोड़ा आँखें घुमाते हो, पर बस अपने अंदर।\n\nएक दोपहर, तुम बिना फ़ोन किए आ जाते हो। दरवाज़ा खुला है, हमेशा की तरह। तुम चुपचाप अंदर आते हो, जैसे हमेशा आते हो।\n\nबा रसोई में हैं, पर बा को अभी पता नहीं कि तुम वहाँ हो।\n\nतुम रसोई के दरवाज़े पर रुक जाते हो।", "बा काउंटर पर खड़ी हैं, चाकू और कटिंग बोर्ड के साथ, और बा के हाथों में एक आम है। बा उसे धीरे-धीरे काट रही हैं, जिस तरह हमेशा काटती हैं, उसे घुमाते हुए और काटते हुए ताकि टुकड़े बराबर और साफ़ निकलें।\n\nपर घर में कोई और नहीं है। किसी ने फ़ोन नहीं किया। किसी ने कुछ नहीं माँगा।\n\nबा बस एक आम काट रही हैं।\n\nबस इसलिए कि कोई आ जाए तो।\n\nतुम एक पल बा को काम करते देखते हो, कुछ नहीं कहते। रसोई से पके हुए आम की और चूल्हे पर कुछ गरम होने की महक आ रही है। बा के हाथ नाज़ुक और स्थिर हैं।\n\nतब तुम कुछ समझ जाते हो।\n\nकोई बड़ा विचार नहीं, शब्द नहीं। बस एक एहसास जो ठहरे हुए पानी में पत्थर गिरने जैसा अंदर बैठ जाता है।\n\nयही है। यही है जो बा हर मुलाक़ात पर, फल की हर प्लेट के साथ, कहती रही हैं।", "तुम रसोई में जाते हो और पीछे से बा को बाँहों में भर लेते हो।\n\n\"मैं तुमसे प्यार करता हूँ, बा।\"\n\nबा बिल्कुल स्थिर हो जाती हैं।\n\nबा के कान गुलाबी हो जाते हैं।\n\nबा जवाब में कुछ नहीं कहतीं। बा ने कभी नहीं कहा।\n\nबा तुम्हारे हाथ पर एक बार, दो बार थपकी देती हैं। फिर बा दोबारा चाकू उठा लेती हैं।\n\nबा एक और आम काटती हैं।"], "gu": ["બા હંમેશા રસોડામાં હોય છે.\n\nબસ ત્યાં જ બા રહે છે. બીજી દાદીઓ બેઠકખંડમાં બેસે છે. બીજી દાદીઓ ટીવી જુએ છે, અથવા વાંચે છે, અથવા બપોરના તડકામાં આરામ કરે છે. બા રસોડામાં છે. બા હંમેશા રસોડામાં જ રહી છે.\n\nજ્યારે તું બા ના ઘરે આવે છે, બા પહેલી વાત \"નમસ્તે\" નથી કહેતી અને \"કેમ છે\" પણ નથી કહેતી.\n\nબા પહેલી વાત આ કહે છે: \"તેં ખાધું?\"\n\nદર એક વખતે.", "તું હા કહે છે, કેમ કે તેં કદાચ ખાધું જ હશે. તેં આવતા પહેલા ખાધું હતું. તને ભૂખ પણ નથી.\n\nબા માથું હલાવે છે. બા પાછી રસોડામાં જાય છે.\n\nથોડી મિનિટ પછી, ટેબલ પર ફળ આવી જાય છે. એક કેરી, લાંબા સોનેરી ટુકડામાં કાપેલો. કે કેળાં, વચ્ચેથી કાપેલા, એક પ્લેટમાં ગોઠવેલા. કે જે પણ બા પાસે હોય — જામફળ જ્યારે મોસમ હોય, પપૈયું જ્યારે બા ને કોઈ સારો મળી જાય.\n\nપ્લેટ ત્યાં હોય છે. એ બસ આવી જાય છે.\n\n\"બા, મને ભૂખ નથી.\"\n\nબા કંઈ કહેતી નથી. બા પાછી રસોડામાં જાય છે. પ્લેટ ત્યાં જ રહે છે.\n\nતું ખાઈ લે છે. અલબત્ત ખાય છે. એ મીઠું છે અને ઠંડું છે અને બરાબર પાકેલું છે, કેમ કે બા દરરોજ ફળ તપાસે છે અને જાણે છે કે એ ક્યારે તૈયાર છે.", "બા દરવાજેથી જુએ છે. બસ એક પળ માટે. પછી બા પાછી જાય છે.\n\nઆ દરેક મુલાકાતે થાય છે. તને ટેવ પડી ગઈ છે. તું મનમાં થોડી આંખો ઘુમાવે છે, પણ બસ તારી અંદર.\n\nએક બપોરે, તું ફોન કર્યા વગર આવી જાય છે. દરવાજો ખુલ્લો છે, હંમેશની જેમ. તું ચૂપચાપ અંદર આવે છે, જે રીતે હંમેશા આવે છે.\n\nબા રસોડામાં છે, પણ બા ને હજી ખબર નથી કે તું ત્યાં છે.\n\nતું રસોડાના દરવાજે રોકાય છે.", "બા કાઉન્ટર પર ઊભી છે, છરી અને કાપવાના પાટિયા સાથે, અને બા ના હાથમાં એક કેરી છે. બા એને ધીમે ધીમે કાપી રહી છે, જે રીતે બા હંમેશા કાપે છે, એને ફેરવતી અને કાપતી જેથી ટુકડા સરખા અને સાફ આવે.\n\nપણ ઘરમાં બીજું કોઈ નથી. કોઈએ ફોન કર્યો નથી. કોઈએ કંઈ માંગ્યું નથી.\n\nબા બસ એક કેરી કાપી રહી છે.\n\nબસ એટલા માટે કે કોઈ આવી જાય તો.\n\nતું એક પળ બા ને કામ કરતા જુએ છે, કંઈ બોલ્યા વગર. રસોડામાંથી પાકા કેરી ની અને ચૂલા પર કંઈક ગરમ થવાની ગંધ આવે છે. બા ના હાથ સંભાળથી અને સ્થિર છે.\n\nત્યારે તું કંઈક સમજી જાય છે.\n\nકોઈ મોટો વિચાર નહીં, શબ્દો નહીં. બસ એક એહસાસ જે સ્થિર પાણીમાં પથ્થર પડવાની જેમ અંદર બેસી જાય છે.\n\nઆ જ છે. આ જ છે જે બા દરેક મુલાકાતે, ફળની દરેક પ્લેટ સાથે, કહેતી રહી છે.", "તું રસોડામાં જાય છે અને પાછળથી બા ને હાથમાં લઈ લે છે.\n\n\"હું તને પ્રેમ કરું છું, બા.\"\n\nબા એકદમ સ્થિર થઈ જાય છે.\n\nબા ના કાન ગુલાબી થઈ જાય છે.\n\nબા જવાબ આપતી નથી. બા એ ક્યારેય જવાબ આપ્યો નથી.\n\nબા તારા હાથ પર એક વાર, બે વાર થપથપાવે છે. પછી બા ફરી છરી ઉપાડે છે.\n\nબા બીજો એક કેરી કાપે છે."], "es": ["Ba siempre está en la cocina.\n\nAhí es donde Ba está. Otras abuelas se sientan en la sala. Otras abuelas ven la televisión, o leen, o descansan al sol de la tarde. Ba está en la cocina. Ba siempre ha estado en la cocina.\n\nCuando vienes a casa de Ba, lo primero que Ba dice no es \"Hola\" ni \"¿Cómo estás?\"\n\nLo primero que Ba dice es: \"¿Comiste?\"\n\nCada vez.", "Dices que sí, porque probablemente comiste. Comiste antes de venir. Ni siquiera tienes hambre.\n\nBa asiente. Ba vuelve a la cocina.\n\nUnos minutos después, aparece fruta en la mesa. Un mango, cortado en largas piezas doradas. O plátanos, partidos y acomodados en un plato. O lo que sea que Ba tenga: guayaba cuando es la temporada, papaya cuando Ba encuentra una buena.\n\nEl plato está ahí. Siempre aparece y ya.\n\n\"Ba, no tengo hambre.\"\n\nBa no dice nada. Ba vuelve a la cocina. El plato se queda.\n\nLo comes. Por supuesto que lo comes. Es dulce y fresco y está perfectamente maduro, porque Ba revisa la fruta todos los días y sabe exactamente cuándo está lista.", "Ba mira desde la puerta. Solo por un momento. Después Ba se va.\n\nEsto pasa en cada visita. Estás acostumbrado. Pones los ojos en blanco un poco, pero solo para ti.\n\nUna tarde vienes sin llamar. La puerta está abierta, como siempre. Entras en silencio, como siempre.\n\nBa está en la cocina, pero Ba no sabe todavía que estás ahí.\n\nTe detienes en la puerta de la cocina.", "Ba está parada en el mesón con el cuchillo y la tabla para cortar, y en las manos de Ba hay un mango. Ba lo está cortando despacio, como siempre hace, girándolo y rebanándolo para que las piezas salgan parejas y limpias.\n\nPero no hay nadie más en casa. Nadie llamó. Nadie pidió nada.\n\nBa simplemente está cortando un mango.\n\nPor si alguien viene.\n\nMiras a Ba trabajar por un momento, sin decir nada. La cocina huele a mango maduro y a algo cálido en la estufa. Las manos de Ba son cuidadosas y firmes.\n\nEntiendes algo en ese momento.\n\nNo es un pensamiento grande, no son palabras. Solo una sensación que se asienta como una piedra cayendo en agua quieta.\n\nEsto es. Esto es lo que Ba ha estado diciendo, en cada visita, con cada plato de fruta.", "Entras a la cocina y rodeas a Ba con los brazos por detrás.\n\n\"Te quiero, Ba.\"\n\nBa se queda completamente quieta.\n\nLas orejas de Ba se ponen rosadas.\n\nBa no lo dice de vuelta. Ba nunca lo ha dicho.\n\nBa te da una palmadita en la mano una vez, dos veces. Después Ba vuelve a tomar el cuchillo.\n\nBa corta otro mango."], "fr": ["Ba est toujours dans la cuisine.\n\nC'est juste là que Ba se trouve. D'autres grands-mères s'assoient dans le salon. D'autres grands-mères regardent la télévision, ou lisent, ou se reposent au soleil de l'après-midi. Ba est dans la cuisine. Ba a toujours été dans la cuisine.\n\nQuand tu viens chez Ba, la première chose que Ba dit n'est pas \"Bonjour\" ni \"Comment vas-tu.\"\n\nLa première chose que Ba dit est : \"Tu as mangé ?\"\n\nÀ chaque fois.", "Tu dis oui, parce que tu as probablement mangé. Tu as mangé avant de venir. Tu n'as même pas faim.\n\nBa hoche la tête. Ba retourne à la cuisine.\n\nQuelques minutes plus tard, des fruits apparaissent sur la table. Un mangue, coupé en longues tranches dorées. Ou des bananes, fendues et disposées sur une assiette. Ou ce que Ba a : goyave quand c'est la saison, papaye quand Ba en trouve une bonne.\n\nL'assiette est là. Elle apparaît, simplement.\n\n\"Ba, je n'ai pas faim.\"\n\nBa ne dit rien. Ba retourne à la cuisine. L'assiette reste.\n\nTu manges. Bien sûr que tu manges. C'est doux et frais et parfaitement mûr, parce que Ba vérifie les fruits chaque jour et sait exactement quand ils sont prêts.", "Ba regarde depuis la porte. Juste un instant. Puis Ba s'en va.\n\nCela arrive à chaque visite. Tu en as l'habitude. Tu lèves un peu les yeux au ciel, mais seulement pour toi-même.\n\nUn après-midi, tu viens sans appeler. La porte n'est pas verrouillée, comme toujours. Tu entres en silence, comme toujours.\n\nBa est dans la cuisine, mais Ba ne sait pas encore que tu es là.\n\nTu t'arrêtes à la porte de la cuisine.", "Ba se tient devant le plan de travail avec le couteau et la planche à découper, et dans les mains de Ba il y a un mangue. Ba le coupe lentement, comme Ba le fait toujours, en le tournant et en le tranchant pour que les morceaux sortent réguliers et nets.\n\nMais il n'y a personne d'autre à la maison. Personne n'a appelé. Personne n'a rien demandé.\n\nBa coupe simplement un mangue.\n\nAu cas où quelqu'un viendrait.\n\nTu regardes Ba travailler un moment, sans rien dire. La cuisine sent le mangue mûr et quelque chose de chaud sur la cuisinière. Les mains de Ba sont soignées et stables.\n\nTu comprends quelque chose à ce moment-là.\n\nPas une grande pensée, pas des mots. Juste un sentiment qui se pose comme une pierre tombant dans l'eau immobile.\n\nC'est ça. C'est ce que Ba a dit, à chaque visite, à chaque assiette de fruits.", "Tu entres dans la cuisine et tu entoures Ba de tes bras par-derrière.\n\n\"Je t'aime, Ba.\"\n\nBa devient parfaitement immobile.\n\nLes oreilles de Ba deviennent roses.\n\nBa ne le dit pas en retour. Ba ne l'a jamais dit.\n\nBa tapote ta main une fois, deux fois. Puis Ba reprend le couteau.\n\nBa coupe un autre mangue."]}, "covers": {"en": "A story for ages 5–8 about how love sounds like \"did you eat?\"", "hi": "उम्र 5–8 के लिए एक कहानी, इस बारे में कि प्यार कैसे \"क्या तुमने खाया?\" जैसा सुनाई देता है", "gu": "ઉંમર 5–8 માટેની વાર્તા, એ વિશે કે પ્રેમ કેવી રીતે \"તેં ખાધું?\" જેવો સંભળાય છે", "es": "Una historia para edades 5–8 sobre cómo el amor suena como \"¿comiste?\"", "fr": "Une histoire pour les 5–8 ans sur comment l’amour ressemble à \"tu as mangé ?\""}, "ends": {"en": "Some grandmothers love with words. Some love with mangoes. Both are the same kind of love.", "hi": "कुछ दादियाँ शब्दों से प्यार करती हैं। कुछ आमों से प्यार करती हैं। दोनों एक ही तरह का प्यार हैं।", "gu": "કેટલીક દાદીઓ શબ્દોથી પ્રેમ કરે છે. કેટલીક કેરીઓથી પ્રેમ કરે છે. બંને એક જ પ્રકારનો પ્રેમ છે.", "es": "Algunas abuelas aman con palabras. Algunas aman con mangos. Ambos son el mismo tipo de amor.", "fr": "Certaines grand-mères aiment avec des mots. Certaines aiment avec des mangues. Les deux sont le même type d’amour."}, "back_labels": {"en": "← Library", "hi": "← पुस्तकालय", "gu": "← પુસ્તકાલય", "es": "← Biblioteca", "fr": "← Bibliothèque"}, "end_btn": {"en": "← Back to the library", "hi": "← पुस्तकालय पर वापस", "gu": "← પુસ્તકાલય પર પાછા", "es": "← Volver a la biblioteca", "fr": "← Retour à la bibliothèque"}, "titles": {"en": "Kitchen of Love", "hi": "प्यार की रसोई", "gu": "રસોડામાં પ્રેમ", "es": "Cocina de Amor", "fr": "Cuisine d'Amour"}, "kickers": {"en": "Fablewick", "hi": "फेबलविक", "gu": "ફેબલવિક", "es": "Fablewick", "fr": "Fablewick"}, "end_marks": {"en": "— The End —", "hi": "— समाप्त —", "gu": "— સમાપ્ત —", "es": "— Fin —", "fr": "— Fin —"}, "nav_prev": {"en": "← Back", "hi": "← पीछे", "gu": "← પાછળ", "es": "← Atrás", "fr": "← Retour"}, "nav_next": {"en": "Next →", "hi": "आगे →", "gu": "આગળ →", "es": "Siguiente →", "fr": "Suivant →"}, "page_label": {"en": "Page {n} of {t}", "hi": "पृष्ठ {n} / {t}", "gu": "પૃષ્ઠ {n} / {t}", "es": "Página {n} de {t}", "fr": "Page {n} sur {t}"}};
+
+// Read persisted language from the landing page's localStorage
+const LANG_KEY = 'fablewick.lang';
+const SUPPORTED_LANGS = ['en', 'hi', 'gu', 'es', 'fr'];
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return SUPPORTED_LANGS.includes(saved) ? saved : 'en';
+  } catch (e) { return 'en'; }
+})();
+
+// Apply translations on page load
+document.addEventListener('DOMContentLoaded', () => {
+  applyLanguage(currentLang);
+});
+
+function applyLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) lang = 'en';
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Cover tagline + end line + back labels
+  const coverTagline = document.querySelector('.cover-tagline');
+  if (coverTagline) coverTagline.textContent = I18N.covers[lang] || I18N.covers.en;
+
+  const endLine = document.querySelector('.end-line');
+  if (endLine) endLine.textContent = I18N.ends[lang] || I18N.ends.en;
+
+  const backLabel = document.querySelector('.book-topbar .back-link .back-label');
+  if (backLabel) backLabel.textContent = (I18N.back_labels[lang] || I18N.back_labels.en).replace(/^[←\s]+/, '');
+
+  const endBtn = document.querySelector('.end-back-btn');
+  if (endBtn) endBtn.textContent = I18N.end_btn[lang] || I18N.end_btn.en;
+
+  // Cover title + kicker, end mark, topbar book name, document title — native script
+  const coverTitle = document.querySelector('.cover-title');
+  if (coverTitle && I18N.titles) coverTitle.textContent = I18N.titles[lang] || I18N.titles.en;
+
+  const coverKicker = document.querySelector('.cover-kicker');
+  if (coverKicker && I18N.kickers) coverKicker.textContent = I18N.kickers[lang] || I18N.kickers.en;
+
+  const endMark = document.querySelector('.end-mark');
+  if (endMark && I18N.end_marks) endMark.textContent = I18N.end_marks[lang] || I18N.end_marks.en;
+
+  // topbar shows the Fablewick wordmark (image) — always English, never translated
+  if (I18N.titles) document.title = (I18N.titles[lang] || I18N.titles.en) + ' — Fablewick';
+
+  const prevB = document.getElementById('prevBtn');
+  if (prevB && I18N.nav_prev) prevB.textContent = I18N.nav_prev[lang] || I18N.nav_prev.en;
+  const nextB = document.getElementById('nextBtn');
+  if (nextB && I18N.nav_next) nextB.textContent = I18N.nav_next[lang] || I18N.nav_next.en;
+
+  if (typeof updateUI === 'function') updateUI();
+
+  // Page-by-page story text — pages with class .image-page or just .page (not cover/end)
+  // Use a fixed 5-page mapping: the 5 content pages between cover and end
+  const contentPages = Array.from(document.querySelectorAll('.page'))
+    .filter(p => !p.classList.contains('cover-page') && !p.classList.contains('end-page'));
+  const pageTextsForLang = I18N.pageTexts[lang] || I18N.pageTexts.en;
+  contentPages.forEach((pageEl, idx) => {
+    const textEl = pageEl.querySelector('.page-text');
+    if (!textEl || !pageTextsForLang[idx]) return;
+    // Split into <p> paragraphs by double newline
+    const html = pageTextsForLang[idx]
+      .split(/\n\s*\n/)
+      .map(p => '<p>' + escapeForHtml(p.trim()) + '</p>')
+      .join('');
+    textEl.innerHTML = html;
+  });
+}
+
+function escapeForHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+const pages = Array.from(document.querySelectorAll('.page'));
+const total = pages.length;
+let currentIdx = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipPrev = document.getElementById('flipPrev');
+const flipNext = document.getElementById('flipNext');
+const pageCounter = document.getElementById('pageCounter');
+const pageLabel = document.getElementById('pageLabel');
+const progressFill = document.getElementById('progressFill');
+const dotsEl = document.getElementById('dots');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.dataset.idx = i;
+  d.setAttribute('aria-label', 'Go to page ' + (i + 1));
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function goTo(newIdx) {
+  if (newIdx < 0 || newIdx >= total || newIdx === currentIdx) return;
+  const dir = newIdx > currentIdx ? 1 : -1;
+  const oldPage = pages[currentIdx];
+  const newPage = pages[newIdx];
+
+  // incoming page: preset on the side it enters from (no transition for the preset)
+  newPage.classList.remove('active', 'turn-fwd', 'turn-back', 'enter-fwd', 'enter-back');
+  newPage.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+  void newPage.offsetWidth;            // commit the preset before animating
+
+  // outgoing page turns away like a leaf
+  oldPage.classList.remove('active');
+  oldPage.classList.add(dir > 0 ? 'turn-fwd' : 'turn-back');
+
+  // incoming page settles flat
+  newPage.classList.remove('enter-fwd', 'enter-back');
+  newPage.classList.add('active');
+
+  setTimeout(() => {
+    oldPage.classList.remove('turn-fwd', 'turn-back', 'exit-left');
+    const txt = newPage.querySelector('.page-text');
+    if (txt) txt.scrollTop = 0;
+  }, 600);
+
+  currentIdx = newIdx;
+  updateUI();
+}
+
+function updateUI() {
+  const n = currentIdx + 1;
+  pageCounter.textContent = `${n} / ${total}`;
+  const labelTmpl = (I18N.page_label && (I18N.page_label[currentLang] || I18N.page_label.en)) || 'Page {n} of {t}';
+  pageLabel.textContent = labelTmpl.replace('{n}', n).replace('{t}', total);
+  progressFill.style.width = (n / total * 100) + '%';
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === total - 1;
+  if (flipPrev) flipPrev.disabled = currentIdx === 0;
+  if (flipNext) flipNext.disabled = currentIdx === total - 1;
+  var _wm = document.querySelector('.topbar-wordmark');
+  if (_wm) _wm.style.display = currentIdx === 0 ? '' : 'none';
+  Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+if (flipPrev) flipPrev.addEventListener('click', () => goTo(currentIdx - 1));
+if (flipNext) flipNext.addEventListener('click', () => goTo(currentIdx + 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { goTo(currentIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { goTo(currentIdx - 1); e.preventDefault(); }
+  if (e.key === 'Escape') { window.location.href = 'fablewick-landing.html'; }
+});
+
+updateUI();
+
+// ─── DUSK THEME starfield (reader) ────────────────────────────
+(function () {
+  var sky = document.getElementById('starfield');
+  if (!sky) return;
+  var spark = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z" fill="#FFF6E0"/></svg>';
+  var n = Math.max(30, Math.min(80, Math.round(window.innerWidth * window.innerHeight / 16000)));
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('div');
+    s.className = 'twk';
+    var size = (3 + Math.random() * 6).toFixed(1);
+    s.style.left = (Math.random() * 99).toFixed(1) + '%';
+    s.style.top = (Math.random() * 92).toFixed(1) + '%';
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.animation = 'fwTw ' + (2.4 + Math.random() * 3.2).toFixed(2) + 's ease-in-out ' + (Math.random() * 6).toFixed(2) + 's infinite';
+    s.innerHTML = spark;
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

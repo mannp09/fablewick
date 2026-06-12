@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Boy Who Couldn't Walk — Fablewick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #FBF6EE;
+  --cream-dark: #F0E8DA;
+  --ink: #2A2118;
+  --ink-light: #5A4D3E;
+  --amber: #D4925E;
+  --amber-light: #ECC9A8;
+  --coral: #D67A6E;
+  --sage: #8FA68A;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+  --radius-cozy: 28px;
+  --transition: 0.35s ease;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ───────────────────────────── */
+.book-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: 52px;
+}
+.book-topbar .back-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  transition: background var(--transition), color var(--transition);
+}
+.book-topbar .back-link:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.book-topbar .book-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.book-topbar .page-counter {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+}
+
+/* ── PROGRESS BAR ──────────────────────── */
+.progress-track {
+  position: fixed;
+  top: 52px; left: 0; right: 0;
+  height: 3px;
+  background: rgba(42, 33, 24, 0.06);
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--coral));
+  width: 20%;
+  transition: width 0.5s ease;
+}
+
+/* ── PAGE STAGE ──────────────────────────── */
+.stage {
+  position: fixed;
+  top: 55px; left: 0;
+  right: 0; bottom: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+.page-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Image area */
+.page-illustration {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 8px 32px rgba(42, 33, 24, 0.10);
+}
+.page-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.page-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.page-text p { margin-bottom: 1rem; }
+.page-text p:last-child { margin-bottom: 0; }
+
+/* Wider screens: image left, text right */
+@media (min-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    height: 100%;
+  }
+  .page-illustration {
+    aspect-ratio: 16 / 9;
+  }
+  .page-text {
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Tall screens: text first */
+@media (max-height: 600px) and (max-width: 899px) {
+  .page-illustration { aspect-ratio: 16 / 6; }
+  .page-text { font-size: 0.95rem; }
+}
+
+/* ── NAVIGATION ──────────────────────────── */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.15rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.prev {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-btn.prev:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(-2px);
+}
+.nav-btn.next {
+  background: var(--ink);
+  color: var(--cream);
+}
+.nav-btn.next:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateX(2px);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  letter-spacing: 0.14em;
+}
+.nav-center .dots {
+  display: inline-flex;
+  gap: 0.45rem;
+  vertical-align: middle;
+  margin-right: 0.65rem;
+}
+.nav-center .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(42, 33, 24, 0.18);
+  transition: background var(--transition), transform var(--transition);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-center .dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* ── COVER / END PAGES ──────────────────────── */
+.cover-page, .end-page {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.cover-page .page-inner, .end-page .page-inner {
+  grid-template-columns: 1fr !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.cover-kicker, .end-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1rem;
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  color: var(--ink-light);
+  max-width: 540px;
+  line-height: 1.6;
+}
+.end-mark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--amber);
+  margin-bottom: 1.5rem;
+}
+.end-line {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--ink-light);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.end-back-btn {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition), transform var(--transition);
+}
+.end-back-btn:hover {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.kbd-hint {
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 600px) { .kbd-hint { display: none; } }
+
+/* ── NAV UPGRADE: brand mark, flip zones, 3D page-turn ─────────── */
+.book-topbar .back-link { display: inline-flex; align-items: center; gap: 0.5rem; }
+.book-topbar .back-link .brand-mark {
+  height: 30px; width: auto; display: block; object-fit: contain;
+}
+.book-topbar .back-link .back-label { line-height: 1; }
+@media (max-width: 560px) {
+  .book-topbar .back-link .back-label { display: none; }
+  .book-topbar .back-link .brand-mark { height: 28px; }
+}
+
+/* Click-to-flip side gutters — over the page edges, clear of topbar + nav-bar */
+.flip-zone {
+  position: fixed;
+  top: 58px;
+  bottom: 4.75rem;
+  width: 24%;
+  max-width: 190px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.flip-prev { left: 0; justify-content: flex-start; padding-left: 0.4rem; }
+.flip-next { right: 0; justify-content: flex-end; padding-right: 0.4rem; }
+.flip-zone::before {
+  font-family: var(--font-ui);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink-light);
+  width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(251, 246, 238, 0.82);
+  border-radius: 100px;
+  box-shadow: 0 2px 10px rgba(42, 33, 24, 0.12);
+}
+.flip-prev::before { content: "\2039"; }
+.flip-next::before { content: "\203A"; }
+.flip-zone:hover, .flip-zone:focus-visible { opacity: 1; }
+.flip-zone:focus { outline: none; }
+.flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) {
+  /* touch: show a faint resting hint so kids know the edges are tappable */
+  .flip-zone:not([disabled]) { opacity: 0.5; }
+}
+
+/* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
+.stage { perspective: 2200px; }
+.page {
+  transform-origin: center center;
+  transform: rotateY(0);
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+.page.active { opacity: 1; pointer-events: auto; transform: rotateY(0) translateX(0); }
+.page.enter-fwd  { transition: none; opacity: 0; transform-origin: right center; transform: rotateY(-15deg) translateX(7%); }
+.page.enter-back { transition: none; opacity: 0; transform-origin: left center;  transform: rotateY(15deg)  translateX(-7%); }
+.page.turn-fwd   { opacity: 0; transform-origin: left center;  transform: rotateY(36deg)  translateX(-4%); }
+.page.turn-back  { opacity: 0; transform-origin: right center; transform: rotateY(-36deg) translateX(4%); }
+.page::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.55s ease;
+}
+.page.turn-fwd::after  { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0) 55%, rgba(42,33,24,0.16)); }
+.page.turn-back::after { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0.16), rgba(42,33,24,0) 45%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.active,
+  .page.enter-fwd, .page.enter-back,
+  .page.turn-fwd, .page.turn-back {
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
+  .page::after { display: none !important; }
+}
+
+/* ── COVER REDESIGN: centered wordmark + cover art ─────────────── */
+.book-topbar .topbar-wordmark {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 26px; width: auto; display: block;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .book-topbar .topbar-wordmark { height: 22px; }
+}
+.cover-page .page-inner {
+  justify-content: flex-start;
+  padding-top: 3vh;
+  gap: 1.5rem;
+}
+.cover-art {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 10px 36px rgba(42, 33, 24, 0.14);
+}
+.cover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 600px) {
+  .cover-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .cover-art { max-width: 100%; }
+  .cover-page .page-inner { padding-top: 2vh; }
+}
+
+/* ── DUSK THEME (reader) — night sky + light text/chrome ─────── */
+body { background: linear-gradient(180deg, #1C2A52 0%, #46396A 52%, #B97E7A 100%) !important; background-attachment: fixed !important; }
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#starfield .twk { position: absolute; opacity: 0.16; will-change: opacity, transform; }
+@keyframes fwTw { 0%,40%,100% { opacity: 0.14; transform: scale(0.6); } 47% { opacity: 1; transform: scale(1); } 54% { opacity: 0.14; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { #starfield .twk { animation: none !important; opacity: 0.5 !important; } }
+
+.stage { z-index: 1; }
+.book-topbar { background: rgba(24, 34, 66, 0.74) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+.book-topbar .back-link .back-label { color: #E7DFF3 !important; }
+.page-counter { color: #CFC6DD !important; }
+.progress-track { background: rgba(255,255,255,0.10) !important; }
+
+.page-text, .page-text p { color: #EFE7DD !important; }
+.cover-title { color: #FBF4EC !important; }
+.cover-tagline { color: #E6DAE4 !important; }
+.cover-kicker { color: #E9BD93 !important; }
+.end-mark { color: #E9BD93 !important; }
+.end-line { color: #E6DAE4 !important; }
+
+.nav-bar { background: rgba(24, 34, 66, 0.78) !important; border-top-color: rgba(255,255,255,0.12) !important; }
+.nav-btn.prev { background: rgba(255,255,255,0.12) !important; color: #EADFF0 !important; }
+.nav-btn.next { background: #F3ECE2 !important; color: #2A2342 !important; }
+.nav-center { color: #CFC6DD !important; }
+.nav-center .dot { background: rgba(255,255,255,0.28) !important; }
+.nav-center .dot.active { background: #E9BD93 !important; }
+</style>
+</head>
+<body>
+<div id="starfield" aria-hidden="true"></div>
+
+<div class="book-topbar">
+  <a href="fablewick-landing.html" class="back-link" aria-label="Fablewick home"><img class="brand-mark" src="../src/assets/fablewick-mark.png" alt="Fablewick"><span class="back-label">Library</span></a>
+  
+  <div class="page-counter" id="pageCounter">1 / 7</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage" role="main">
+  <button class="flip-zone flip-prev" id="flipPrev" type="button" aria-label="Previous page" tabindex="-1"></button>
+  <button class="flip-zone flip-next" id="flipNext" type="button" aria-label="Next page" tabindex="-1"></button>
+
+  <!-- PAGE 1: COVER -->
+  <section class="page cover-page active" data-page="1">
+    <div class="page-inner">
+      <h1 class="cover-title">The Boy Who Couldn't Walk</h1>
+      <div class="cover-art"><img src="../src/assets/pages/the-boy-who-could-not-walk/cover.jpg" alt=""></div>
+      <p class="cover-tagline">A story for ages 7–10 about how courage means showing up anyway</p>
+    </div>
+  </section>
+
+  <!-- PAGE 2: Boyhood at Campobello -->
+  <section class="page" data-page="2">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-boy-who-could-not-walk/page-01.jpg" alt="Young Franklin sailing off the green island of Campobello" onerror="this.onerror=null;this.src='../src/assets/pages/the-boy-who-could-not-walk/page-01.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Franklin loved the ocean.</p>
+        <p>Every summer he sailed his little boat off a green island called Campobello, pulling the white sail tight against the wind. He swam until his fingers turned white. He climbed the wet rocks barefoot, and his legs were strong and quick and sure.</p>
+        <p>"You are made of wind and water," his mother told him.</p>
+        <p>Franklin believed her. It felt true.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: Growing up + the illness strikes -->
+  <section class="page" data-page="3">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-boy-who-could-not-walk/page-02.jpg" alt="Grown Franklin diving into the cold sea at Campobello" onerror="this.onerror=null;this.src='../src/assets/pages/the-boy-who-could-not-walk/page-02.jpg'">
+      </div>
+      <div class="page-text">
+        <p>One summer, when Franklin was grown, he came back to Campobello. He dove off the dark rocks into the same cold water he had loved his whole life, the afternoon light turning gold around him.</p>
+        <p>He went to bed tired. A good, ordinary kind of tired.</p>
+        <p>In the morning, his legs would not wake up.</p>
+        <p>The sickness was called polio.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4: The verdict + Franklin’s answer -->
+  <section class="page" data-page="4">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-boy-who-could-not-walk/page-03.jpg" alt="Eleanor sitting beside Franklin as the sea sounds outside the window" onerror="this.onerror=null;this.src='../src/assets/pages/the-boy-who-could-not-walk/page-03.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Doctors came and went. They tried everything they knew. At last, one of them said the words very gently: "You will not walk again."</p>
+        <p>Franklin was quiet for a long time. His wife, Eleanor, sat close beside the bed and held his hand. Outside the window, the sea went on sounding the way it always had — far away, calm, patient.</p>
+        <p>Then Franklin spoke.</p>
+        <p>"That is one thing," he said. "There are many other things."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5: The years of rebuilding -->
+  <section class="page" data-page="5">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-boy-who-could-not-walk/page-04.jpg" alt="Franklin lifting himself with his arms, his wheelchair beside him" onerror="this.onerror=null;this.src='../src/assets/pages/the-boy-who-could-not-walk/page-04.jpg'">
+      </div>
+      <div class="page-text">
+        <p>So Franklin worked.</p>
+        <p>Not at running. Not at jumping. Those doors were closed. He worked at the parts of him that still listened — his shoulders, his arms, his chest. Morning after morning, he lifted his whole body between two wooden bars, jaw set, arms shaking. He swam in warm water, where his legs could remember what moving felt like.</p>
+        <p>He learned to use his wheelchair like a tool. Like a boat, almost. Something to steer.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 6: Leading a country from a chair -->
+  <section class="page" data-page="6">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/the-boy-who-could-not-walk/page-05.jpg" alt="Franklin speaking to the country on the radio from his chair" onerror="this.onerror=null;this.src='../src/assets/pages/the-boy-who-could-not-walk/page-05.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Years later, when his country was scared and tired, Franklin became its president.</p>
+        <p>At night he sat in his chair by the fire and spoke into the radio, slow and warm, like a friend at the kitchen table. In little lit houses everywhere, people leaned in to listen. "You are not alone," he told them.</p>
+        <p>Franklin never walked again.</p>
+        <p>But every single day, he showed up.</p>
+        <p>And showing up, it turned out, was the bravest thing of all.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 7: END -->
+  <section class="page end-page" data-page="7">
+    <div class="page-inner">
+      <div class="end-mark">— The End —</div>
+      <p class="end-line">Courage isn't standing up. Courage is showing up anyway.</p>
+      <a href="fablewick-landing.html" class="end-back-btn">← Back to the library</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar" role="navigation" aria-label="Story pages">
+  <button class="nav-btn prev" id="prevBtn" disabled aria-label="Previous page">← Back</button>
+  <div class="nav-center">
+    <span class="dots" id="dots"></span>
+    <span id="pageLabel" aria-live="polite">Page 1 of 7</span>
+  </div>
+  <button class="nav-btn next" id="nextBtn" aria-label="Next page">Next →</button>
+</div>
+
+<script>
+// ─── i18n data (inlined to avoid file:// fetch issues) ────────
+const I18N = {"pageTexts": {"en": ["Franklin loved the ocean.\n\nEvery summer he sailed his little boat off a green island called Campobello, pulling the white sail tight against the wind. He swam until his fingers turned white. He climbed the wet rocks barefoot, and his legs were strong and quick and sure.\n\n\"You are made of wind and water,\" his mother told him.\n\nFranklin believed her. It felt true.", "One summer, when Franklin was grown, he came back to Campobello. He dove off the dark rocks into the same cold water he had loved his whole life, the afternoon light turning gold around him.\n\nHe went to bed tired. A good, ordinary kind of tired.\n\nIn the morning, his legs would not wake up.\n\nThe sickness was called polio.", "Doctors came and went. They tried everything they knew. At last, one of them said the words very gently: \"You will not walk again.\"\n\nFranklin was quiet for a long time. His wife, Eleanor, sat close beside the bed and held his hand. Outside the window, the sea went on sounding the way it always had — far away, calm, patient.\n\nThen Franklin spoke.\n\n\"That is one thing,\" he said. \"There are many other things.\"", "So Franklin worked.\n\nNot at running. Not at jumping. Those doors were closed. He worked at the parts of him that still listened — his shoulders, his arms, his chest. Morning after morning, he lifted his whole body between two wooden bars, jaw set, arms shaking. He swam in warm water, where his legs could remember what moving felt like.\n\nHe learned to use his wheelchair like a tool. Like a boat, almost. Something to steer.", "Years later, when his country was scared and tired, Franklin became its president.\n\nAt night he sat in his chair by the fire and spoke into the radio, slow and warm, like a friend at the kitchen table. In little lit houses everywhere, people leaned in to listen. \"You are not alone,\" he told them.\n\nFranklin never walked again.\n\nBut every single day, he showed up.\n\nAnd showing up, it turned out, was the bravest thing of all."], "hi": ["फ़्रैंकलिन को समुद्र बहुत पसंद था।\n\nजब फ़्रैंकलिन एक छोटा लड़का था, वह हर गर्मी कैम्पोबेलो नामक जगह पर बिताता था, जो एक ठंडे, नीले समुद्र के तट से दूर एक हरा द्वीप था। उसने ठीक से लिखना सीखने से पहले नौकायन सीख लिया था। वह इतने ठंडे पानी में तैरा कि उसकी उँगलियाँ सफ़ेद हो जातीं। वह नंगे पैर गीली चट्टानों पर चढ़ता। उसके पैर मज़बूत और तेज़ थे।\n\n\"तुम हवा और पानी से बने हो,\" उसकी माँ ने उसे बताया।\n\nफ़्रैंकलिन ने उस पर विश्वास किया।", "वह बड़ा हुआ। वह स्कूल गया। उसने एलेनॉर नामक एक विचारशील महिला से शादी की, जो उसकी ज़िंदगी को उन तरीकों से बदलने वाली थी जिनके बारे में वह खुद अभी तक नहीं जानती थी। वह राजनीति में गया, क्योंकि वह लोगों की मदद करना चाहता था, और राजनीति, उसने सोचा, ऐसी जगह थी जहाँ आप कर सकते हैं।\n\nऔर फिर एक गर्मी में, अब तक फ़्रैंकलिन एक बड़ा आदमी था, वह कैम्पोबेलो घर आया, उसी ठंडे पानी में डुबकी लगाई जिसमें वह सारी ज़िंदगी तैरता रहा था, और बाद में, बिस्तर पर लेटे हुए, उसे अपने पैरों का एहसास नहीं हो रहा था।", "बीमारी का नाम पोलियो था।\n\nडॉक्टर आए। उन्होंने वह सब करने की कोशिश की जो वे जानते थे। कई हफ्तों के बाद, उनमें से एक ने वे शब्द कहे जिनका फ़्रैंकलिन को पहले से ही संदेह था: \"तुम फिर कभी नहीं चलोगे।\"\n\nफ़्रैंकलिन एक लंबे समय के लिए बहुत शांत रहा। एलेनॉर उसके पास बैठी थी। समुद्र वैसा ही सुनाई दे रहा था जैसा हमेशा सुनाई देता था। दूर, शांत, धैर्यवान। खिड़की के बाहर।\n\nआखिरकार, फ़्रैंकलिन बोला।\n\n\"यह,\" उसने कहा, \"एक बात है। और भी कई बातें हैं।\"", "सालों तक उसके बाद, वह काम करता रहा। उसने अपने शरीर के उन हिस्सों को मज़बूत बनाने के लिए काम किया जो अभी भी उसकी सुनते थे। उसके कंधे, उसके हाथ, उसकी छाती। वह गर्म पूल में तैरता था ताकि उसके पैरों में जो थोड़ी सी हलचल बची थी वह बनी रहे। उसने व्हीलचेयर का उपयोग करना सीखा जैसे कि वह एक उपकरण हो, सज़ा नहीं। उसने सीखा कि कैसे केवल अपने हाथों से खुद को कार या मंच पर उठाना है। उसने अपनी कुर्सी से एक मीटिंग चलाना सीखा उसी तरह जैसे वह खड़े होकर चलाता था। कमरे में सबसे शांत व्यक्ति बनकर।", "और साल बीते। उसके देश को भयानक मुसीबत आ गई। एक बड़ा आर्थिक तूफ़ान, और फिर एक बड़ा युद्ध। लोग डरे हुए थे। लोग भूखे थे। लोगों को यकीन नहीं था कि चीज़ें फिर कभी ठीक होंगी।\n\nफ़्रैंकलिन राष्ट्रपति के लिए चुनाव लड़ा, और जीता। और वह अपनी बड़ी ऑफ़िस में अपनी कुर्सी पर बैठा, और उसने रेडियो पर अपने देश से बात की, एक शांत, स्थिर आवाज़ में, उसी तरह जैसे आप रसोई की मेज़ पर एक दोस्त से बात करते हैं। उसने उनसे कहा, धीरे और दृढ़ता से, कि वे अकेले नहीं थे। उसने उनसे कहा कि वे ठीक होने वाले हैं।\n\nफ़्रैंकलिन फिर कभी नहीं चला।\n\nलेकिन हर एक दिन, वह हाज़िर हुआ।\n\nऔर हाज़िर होना, यह पता चला, सबसे बहादुर काम था।"], "gu": ["ફ્રેન્કલિન ને દરિયો બહુ ગમતો.\n\nજ્યારે ફ્રેન્કલિન નાનો છોકરો હતો, એ દરેક ઉનાળો કેમ્પોબેલો નામની જગ્યાએ વિતાવતો, જે ઠંડા, વાદળી દરિયાના કિનારે એક લીલો ટાપુ હતો. એણે યોગ્ય રીતે લખવાનું શીખતા પહેલા વહાણ ચલાવવાનું શીખી લીધું હતું. એ એટલા ઠંડા પાણીમાં તરતો કે એની આંગળીઓ સફેદ થઈ જતી. એ ઉઘાડા પગે ભીના ખડકો પર ચડતો. એના પગ મજબૂત અને ઝડપી હતા.\n\n\"તું પવન અને પાણીમાંથી બનેલો છે,\" એની માએ એને કહ્યું.\n\nફ્રેન્કલિન એ માન્યું.", "એ મોટો થયો. એ સ્કૂલ ગયો. એણે ઇલીનોર નામની એક વિચારશીલ સ્ત્રી સાથે લગ્ન કર્યા, જે એની જિંદગીને એવી રીતે બદલવાની હતી જે એ પોતે હજુ સુધી નહોતી જાણતી. એ રાજકારણમાં ગયો, કારણ કે એ લોકોને મદદ કરવા માંગતો હતો, અને રાજકારણ, એણે વિચાર્યું, એવી જગ્યા હતી જ્યાં તમે મદદ કરી શકો.\n\nઅને પછી એક ઉનાળે, હવે ફ્રેન્કલિન મોટો માણસ હતો, એ કેમ્પોબેલો પાછો આવ્યો, એ જ ઠંડા પાણીમાં ડૂબકી લગાવી જેમાં એ આખી જિંદગી તરતો રહ્યો હતો, અને પછી, પથારીમાં સૂતા, એને એના પગનું ભાન નહોતું થતું.", "બીમારીનું નામ પોલિયો હતું.\n\nડૉક્ટરો આવ્યા. એમણે જે કંઈ જાણતા હતા તે બધું કરવાનો પ્રયત્ન કર્યો. ઘણા અઠવાડિયા પછી, એમાંથી એકે એ શબ્દો કહ્યા જેની ફ્રેન્કલિન ને પહેલેથી જ શંકા હતી: \"તું ફરી ક્યારેય ચાલી નહીં શકે.\"\n\nફ્રેન્કલિન લાંબા સમય માટે ખૂબ શાંત રહ્યો. ઇલીનોર એની બાજુમાં બેઠી હતી. દરિયો એ જ રીતે સંભળાતો જે રીતે હંમેશા સંભળાતો. દૂર, શાંત, ધીરજવાન. બારી બહાર.\n\nઆખરે, ફ્રેન્કલિન બોલ્યો.\n\n\"એ,\" એણે કહ્યું, \"એક વાત છે. બીજી ઘણી વાતો છે.\"", "વર્ષો સુધી પછી, એણે કામ કર્યું. એણે પોતાના શરીરના એ ભાગોને મજબૂત બનાવવા માટે કામ કર્યું જે હજુ પણ એને સાંભળતા હતા. એના ખભા, એના હાથ, એની છાતી. એ ગરમ પૂલમાં તરતો જેથી એના પગમાં જે થોડી હલચલ બાકી હતી તે જળવાઈ રહે. એણે વ્હીલચેરનો ઉપયોગ કરવાનું શીખ્યું જાણે કે એ સાધન હોય, સજા નહીં. એણે શીખ્યું કે કેવી રીતે માત્ર હાથોથી પોતાને કાર અથવા સ્ટેજ પર ઉપાડવો. એણે પોતાની ખુરશીમાંથી મીટિંગ ચલાવવાનું શીખ્યું એ જ રીતે જે રીતે એ ઊભા રહીને ચલાવતો. રૂમમાં સૌથી શાંત વ્યક્તિ બનીને.", "વધુ વર્ષો વીત્યા. એના દેશને ભયંકર મુશ્કેલી આવી. એક મોટું આર્થિક તોફાન, અને પછી એક મોટું યુદ્ધ. લોકો ડરી ગયા હતા. લોકો ભૂખ્યા હતા. લોકોને ખાતરી નહોતી કે વસ્તુઓ ક્યારેય ઠીક થશે.\n\nફ્રેન્કલિન રાષ્ટ્રપ્રમુખ માટે ચૂંટણી લડ્યો, અને જીત્યો. અને એ પોતાની ખુરશીમાં, પોતાની મોટી ઑફિસમાં બેઠો, અને એણે રેડિયો પર પોતાના દેશ સાથે વાત કરી, શાંત, સ્થિર અવાજે, એ રીતે જે રીતે તમે રસોડાના ટેબલ પર મિત્ર સાથે વાત કરો. એણે એમને ધીમેથી અને દૃઢતાથી કહ્યું કે તેઓ એકલા નહોતા. એણે એમને કહ્યું કે તેઓ ઠીક થવાના હતા.\n\nફ્રેન્કલિન ફરી ક્યારેય ચાલ્યો નહીં.\n\nપણ દરેક એક દિવસ, એ હાજર થયો.\n\nઅને હાજર થવું, જાણવા મળ્યું કે એ સૌથી બહાદુર કામ હતું."], "es": ["A Franklin le encantaba el océano.\n\nCuando Franklin era un niño pequeño, pasaba cada verano en un lugar llamado Campobello, que era una isla verde frente a la costa de un mar frío y azul. Aprendió a navegar antes de aprender a escribir correctamente. Nadaba en agua tan fría que sus dedos se ponían blancos. Trepaba descalzo por las rocas mojadas. Sus piernas eran fuertes y rápidas.\n\n\"Estás hecho de viento y agua,\" le decía su madre.\n\nFranklin le creyó.", "Creció. Fue a la escuela. Se casó con una mujer reflexiva llamada Eleanor, quien cambiaría su vida de maneras que ni ella misma sabía aún. Entró en la política, porque quería ayudar a la gente, y la política, pensó, era un lugar donde podías hacerlo.\n\nY entonces un verano, Franklin ya era un hombre adulto para entonces, regresó a casa a Campobello, se zambulló en la misma agua fría en la que había nadado toda su vida, y después, acostado en la cama, no podía sentir sus piernas.", "La enfermedad se llamaba polio.\n\nLlegaron los doctores. Intentaron todo lo que sabían. Después de muchas semanas, uno de ellos dijo las palabras que Franklin ya sospechaba: \"No volverás a caminar.\"\n\nFranklin estuvo muy callado durante mucho tiempo. Eleanor se sentó a su lado. El mar sonaba como siempre había sonado. Lejano, calmado, paciente. Afuera de la ventana.\n\nFinalmente, Franklin habló.\n\n\"Eso,\" dijo, \"es una cosa. Hay muchas otras cosas.\"", "Durante años después, trabajó. Trabajó para hacerse más fuerte en las partes de su cuerpo que todavía lo escuchaban. Sus hombros, sus brazos, su pecho. Nadaba en piscinas cálidas para mantener el poco movimiento que quedaba en sus piernas. Aprendió a usar una silla de ruedas como si fuera una herramienta, no un castigo. Aprendió cómo levantarse, solo con los brazos, a un coche o a un escenario. Aprendió a dirigir una reunión desde su silla de la misma manera que solía dirigirla de pie. Siendo la persona más calmada en la sala.", "Pasaron más años. Su país se metió en terribles problemas. Una gran tormenta económica, y luego una gran guerra. La gente estaba asustada. La gente tenía hambre. La gente no estaba segura de que las cosas alguna vez fueran a estar bien.\n\nFranklin se postuló para presidente, y ganó. Y se sentó en su silla, en su gran oficina, y habló a su país por la radio, con una voz tranquila y firme, como podrías hablar con un amigo en la mesa de la cocina. Les dijo, suave y firmemente, que no estaban solos. Les dijo que iban a estar bien.\n\nFranklin nunca volvió a caminar.\n\nPero cada solo día, se presentaba.\n\nY presentarse, resultó, era lo más valiente de todo."], "fr": ["Franklin adorait l'océan.\n\nQuand Franklin était un petit garçon, il passait chaque été dans un endroit appelé Campobello, qui était une île verte au large de la côte d'une mer froide et bleue. Il a appris à naviguer avant d'apprendre à écrire correctement. Il nageait dans une eau si froide que ses doigts devenaient blancs. Il escaladait les rochers mouillés pieds nus. Ses jambes étaient fortes et rapides.\n\n\"Tu es fait de vent et d'eau,\" lui disait sa mère.\n\nFranklin l'a crue.", "Il a grandi. Il est allé à l'école. Il a épousé une femme réfléchie nommée Eleanor, qui allait changer sa vie de manières qu'elle-même ne savait pas encore. Il est entré en politique, parce qu'il voulait aider les gens, et la politique, pensait-il, était un endroit où on pouvait le faire.\n\nEt puis un été, Franklin était un homme adulte maintenant, il est rentré à Campobello, a plongé dans la même eau froide dans laquelle il avait nagé toute sa vie, et après, allongé dans son lit, il ne pouvait plus sentir ses jambes.", "La maladie s'appelait la polio.\n\nLes docteurs sont venus. Ils ont essayé tout ce qu'ils savaient. Après plusieurs semaines, l'un d'eux a dit les mots que Franklin soupçonnait déjà: \"Tu ne marcheras plus jamais.\"\n\nFranklin est resté très silencieux pendant longtemps. Eleanor était assise à côté de lui. La mer sonnait comme elle avait toujours sonné. Lointaine, calme, patiente. À l'extérieur de la fenêtre.\n\nFinalement, Franklin a parlé.\n\n\"Cela,\" a-t-il dit, \"est une chose. Il y a beaucoup d'autres choses.\"", "Pendant des années après, il a travaillé. Il a travaillé pour devenir plus fort dans les parties de son corps qui l'écoutaient encore. Ses épaules, ses bras, sa poitrine. Il nageait dans des piscines chaudes pour garder le peu de mouvement qui restait dans ses jambes. Il a appris à utiliser un fauteuil roulant comme s'il s'agissait d'un outil, pas d'une punition. Il a appris comment se soulever, avec ses bras seuls, dans une voiture ou sur une scène. Il a appris à diriger une réunion depuis sa chaise de la même manière qu'il la dirigeait debout. En étant la personne la plus calme dans la pièce.", "Des années ont passé. Son pays a été pris dans de terribles ennuis. Une grande tempête économique, puis une grande guerre. Les gens avaient peur. Les gens avaient faim. Les gens n'étaient pas sûrs que les choses allaient un jour aller bien.\n\nFranklin s'est présenté à la présidence, et il a gagné. Et il s'est assis dans sa chaise, dans son grand bureau, et il a parlé à son pays à la radio, d'une voix calme et stable, comme on pourrait parler à un ami à la table de la cuisine. Il leur a dit, doucement et fermement, qu'ils n'étaient pas seuls. Il leur a dit qu'ils allaient s'en sortir.\n\nFranklin n'a plus jamais marché.\n\nMais chaque seul jour, il était présent.\n\nEt être présent, il s'est avéré, était la chose la plus courageuse de toutes."]}, "covers": {"en": "A story for ages 7–10 about how courage means showing up anyway", "hi": "उम्र 7–10 के लिए एक कहानी, इस बारे में कि हिम्मत का मतलब है फिर भी हाज़िर होना", "gu": "ઉંમર 7–10 માટેની વાર્તા, એ વિશે કે હિંમતનો અર્થ છે તોપણ હાજર થવું", "es": "Una historia para edades 7–10 sobre cómo el valor significa presentarse de todos modos", "fr": "Une histoire pour les 7–10 ans sur comment le courage signifie être présent malgré tout"}, "ends": {"en": "Courage isn't standing up. Courage is showing up anyway.", "hi": "हिम्मत खड़े होना नहीं है। हिम्मत है फिर भी हाज़िर होना।", "gu": "હિંમત એટલે ઊભા થવું નહીં. હિંમત એટલે તોપણ હાજર થવું.", "es": "El valor no es ponerse de pie. El valor es presentarse de todos modos.", "fr": "Le courage, ce n'est pas se tenir debout. Le courage, c'est être présent malgré tout."}, "back_labels": {"en": "← Library", "hi": "← पुस्तकालय", "gu": "← પુસ્તકાલય", "es": "← Biblioteca", "fr": "← Bibliothèque"}, "end_btn": {"en": "← Back to the library", "hi": "← पुस्तकालय पर वापस", "gu": "← પુસ્તકાલય પર પાછા", "es": "← Volver a la biblioteca", "fr": "← Retour à la bibliothèque"}, "titles": {"en": "The Boy Who Couldn't Walk", "hi": "वह लड़का जो चल नहीं सकता था", "gu": "જે છોકરો ચાલી શકતો ન હતો", "es": "El niño que no podía caminar", "fr": "Le garçon qui ne pouvait pas marcher"}, "kickers": {"en": "Fablewick", "hi": "फेबलविक", "gu": "ફેબલવિક", "es": "Fablewick", "fr": "Fablewick"}, "end_marks": {"en": "— The End —", "hi": "— समाप्त —", "gu": "— સમાપ્ત —", "es": "— Fin —", "fr": "— Fin —"}, "nav_prev": {"en": "← Back", "hi": "← पीछे", "gu": "← પાછળ", "es": "← Atrás", "fr": "← Retour"}, "nav_next": {"en": "Next →", "hi": "आगे →", "gu": "આગળ →", "es": "Siguiente →", "fr": "Suivant →"}, "page_label": {"en": "Page {n} of {t}", "hi": "पृष्ठ {n} / {t}", "gu": "પૃષ્ઠ {n} / {t}", "es": "Página {n} de {t}", "fr": "Page {n} sur {t}"}};
+
+// Read persisted language from the landing page's localStorage
+const LANG_KEY = 'fablewick.lang';
+const SUPPORTED_LANGS = ['en', 'hi', 'gu', 'es', 'fr'];
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return SUPPORTED_LANGS.includes(saved) ? saved : 'en';
+  } catch (e) { return 'en'; }
+})();
+
+// Apply translations on page load
+document.addEventListener('DOMContentLoaded', () => {
+  applyLanguage(currentLang);
+});
+
+function applyLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) lang = 'en';
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Cover tagline + end line + back labels
+  const coverTagline = document.querySelector('.cover-tagline');
+  if (coverTagline) coverTagline.textContent = I18N.covers[lang] || I18N.covers.en;
+
+  const endLine = document.querySelector('.end-line');
+  if (endLine) endLine.textContent = I18N.ends[lang] || I18N.ends.en;
+
+  const backLabel = document.querySelector('.book-topbar .back-link .back-label');
+  if (backLabel) backLabel.textContent = (I18N.back_labels[lang] || I18N.back_labels.en).replace(/^[←\s]+/, '');
+
+  const endBtn = document.querySelector('.end-back-btn');
+  if (endBtn) endBtn.textContent = I18N.end_btn[lang] || I18N.end_btn.en;
+
+  // Cover title + kicker, end mark, topbar book name, document title — native script
+  const coverTitle = document.querySelector('.cover-title');
+  if (coverTitle && I18N.titles) coverTitle.textContent = I18N.titles[lang] || I18N.titles.en;
+
+  const coverKicker = document.querySelector('.cover-kicker');
+  if (coverKicker && I18N.kickers) coverKicker.textContent = I18N.kickers[lang] || I18N.kickers.en;
+
+  const endMark = document.querySelector('.end-mark');
+  if (endMark && I18N.end_marks) endMark.textContent = I18N.end_marks[lang] || I18N.end_marks.en;
+
+  // topbar shows the Fablewick wordmark (image) — always English, never translated
+  if (I18N.titles) document.title = (I18N.titles[lang] || I18N.titles.en) + ' — Fablewick';
+
+  const prevB = document.getElementById('prevBtn');
+  if (prevB && I18N.nav_prev) prevB.textContent = I18N.nav_prev[lang] || I18N.nav_prev.en;
+  const nextB = document.getElementById('nextBtn');
+  if (nextB && I18N.nav_next) nextB.textContent = I18N.nav_next[lang] || I18N.nav_next.en;
+
+  if (typeof updateUI === 'function') updateUI();
+
+  // Page-by-page story text — pages with class .image-page or just .page (not cover/end)
+  // Use a fixed 5-page mapping: the 5 content pages between cover and end
+  const contentPages = Array.from(document.querySelectorAll('.page'))
+    .filter(p => !p.classList.contains('cover-page') && !p.classList.contains('end-page'));
+  const pageTextsForLang = I18N.pageTexts[lang] || I18N.pageTexts.en;
+  contentPages.forEach((pageEl, idx) => {
+    const textEl = pageEl.querySelector('.page-text');
+    if (!textEl || !pageTextsForLang[idx]) return;
+    // Split into <p> paragraphs by double newline
+    const html = pageTextsForLang[idx]
+      .split(/\n\s*\n/)
+      .map(p => '<p>' + escapeForHtml(p.trim()) + '</p>')
+      .join('');
+    textEl.innerHTML = html;
+  });
+}
+
+function escapeForHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+const pages = Array.from(document.querySelectorAll('.page'));
+const total = pages.length;
+let currentIdx = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipPrev = document.getElementById('flipPrev');
+const flipNext = document.getElementById('flipNext');
+const pageCounter = document.getElementById('pageCounter');
+const pageLabel = document.getElementById('pageLabel');
+const progressFill = document.getElementById('progressFill');
+const dotsEl = document.getElementById('dots');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.dataset.idx = i;
+  d.setAttribute('aria-label', 'Go to page ' + (i + 1));
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function goTo(newIdx) {
+  if (newIdx < 0 || newIdx >= total || newIdx === currentIdx) return;
+  const dir = newIdx > currentIdx ? 1 : -1;
+  const oldPage = pages[currentIdx];
+  const newPage = pages[newIdx];
+
+  // incoming page: preset on the side it enters from (no transition for the preset)
+  newPage.classList.remove('active', 'turn-fwd', 'turn-back', 'enter-fwd', 'enter-back');
+  newPage.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+  void newPage.offsetWidth;            // commit the preset before animating
+
+  // outgoing page turns away like a leaf
+  oldPage.classList.remove('active');
+  oldPage.classList.add(dir > 0 ? 'turn-fwd' : 'turn-back');
+
+  // incoming page settles flat
+  newPage.classList.remove('enter-fwd', 'enter-back');
+  newPage.classList.add('active');
+
+  setTimeout(() => {
+    oldPage.classList.remove('turn-fwd', 'turn-back', 'exit-left');
+    const txt = newPage.querySelector('.page-text');
+    if (txt) txt.scrollTop = 0;
+  }, 600);
+
+  currentIdx = newIdx;
+  updateUI();
+}
+
+function updateUI() {
+  const n = currentIdx + 1;
+  pageCounter.textContent = `${n} / ${total}`;
+  const labelTmpl = (I18N.page_label && (I18N.page_label[currentLang] || I18N.page_label.en)) || 'Page {n} of {t}';
+  pageLabel.textContent = labelTmpl.replace('{n}', n).replace('{t}', total);
+  progressFill.style.width = (n / total * 100) + '%';
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === total - 1;
+  if (flipPrev) flipPrev.disabled = currentIdx === 0;
+  if (flipNext) flipNext.disabled = currentIdx === total - 1;
+  var _wm = document.querySelector('.topbar-wordmark');
+  if (_wm) _wm.style.display = currentIdx === 0 ? '' : 'none';
+  Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+if (flipPrev) flipPrev.addEventListener('click', () => goTo(currentIdx - 1));
+if (flipNext) flipNext.addEventListener('click', () => goTo(currentIdx + 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { goTo(currentIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { goTo(currentIdx - 1); e.preventDefault(); }
+  if (e.key === 'Escape') { window.location.href = 'fablewick-landing.html'; }
+});
+
+updateUI();
+
+// ─── DUSK THEME starfield (reader) ────────────────────────────
+(function () {
+  var sky = document.getElementById('starfield');
+  if (!sky) return;
+  var spark = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z" fill="#FFF6E0"/></svg>';
+  var n = Math.max(30, Math.min(80, Math.round(window.innerWidth * window.innerHeight / 16000)));
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('div');
+    s.className = 'twk';
+    var size = (3 + Math.random() * 6).toFixed(1);
+    s.style.left = (Math.random() * 99).toFixed(1) + '%';
+    s.style.top = (Math.random() * 92).toFixed(1) + '%';
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.animation = 'fwTw ' + (2.4 + Math.random() * 3.2).toFixed(2) + 's ease-in-out ' + (Math.random() * 6).toFixed(2) + 's infinite';
+    s.innerHTML = spark;
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

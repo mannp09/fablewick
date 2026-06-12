@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BookCard from '../components/BookCard.astro';
+
+const books = await getCollection('books');
+books.sort((a, b) => a.data.ageRange[0] - b.data.ageRange[0]);
+
+interface Bucket {
+  label: string;
+  range: [number, number];
+  books: typeof books;
+}
+
+const bucketDefs: Array<{ label: string; range: [number, number] }> = [
+  { label: 'Little Listener', range: [3, 5] },
+  { label: 'New Reader', range: [5, 7] },
+  { label: 'On Your Own', range: [7, 10] },
+];
+
+const buckets: Bucket[] = bucketDefs.map((def) => {
+  const inBucket = books.filter((b) => {
+    const lo = b.data.ageRange[0];
+    const hi = b.data.ageRange[1];
+    return lo <= def.range[1] && hi >= def.range[0];
+  });
+  return { ...def, books: inBucket };
+});
+
+function slugFromId(id: string): string {
+  return id.replace(/\.json$/, '').split('/')[0];
+}
+---
+
+<BaseLayout title="Fablewick — A quiet library of stories for kids">
+  <section class="max-w-6xl mx-auto px-6 pt-16 pb-12">
+    <div class="max-w-2xl">
+      <h1 class="text-5xl md:text-6xl leading-[1.05] tracking-tight mb-6" style="font-family: var(--font-display); font-weight: 500;">
+        A quiet library<br />of stories for kids.
+      </h1>
+      <p class="text-lg leading-relaxed mb-6" style="color: var(--color-ink-soft);">
+        Hand-curated tales with a small lesson tucked inside each one. Read what's here,
+        or make your own — a fresh story shaped to your child's reading level.
+      </p>
+      <div class="flex gap-3">
+        <a href="#library" class="btn-warm inline-block">Browse the library</a>
+        <a href="/create" class="btn-quiet inline-block">Create your own</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="library" class="max-w-6xl mx-auto px-6 pb-20">
+    {buckets.map((bucket) => bucket.books.length === 0 ? null : (
+      <div class="mb-16">
+        <div class="flex items-baseline justify-between mb-6 pb-3 border-b border-[var(--color-cream-soft)]">
+          <h2 class="text-2xl" style="font-family: var(--font-display); font-weight: 500;">{bucket.label}</h2>
+          <span class="text-sm" style="font-family: var(--font-ui); color: var(--color-ink-soft);">Ages {bucket.range[0]}–{bucket.range[1]}</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bucket.books.map((book) => (
+            <BookCard
+              slug={slugFromId(book.id)}
+              title={book.data.title}
+              ageRange={book.data.ageRange}
+              summary={book.data.summary}
+              themes={book.data.themes}
+              coverColor={book.data.coverColor}
+              coverIllustration={book.data.coverIllustration}
+            />
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+</BaseLayout>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fablewick — A quiet library of stories for kids</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FBF6EE;
+    --cream-soft: #F5EFE3;
+    --paper: #FFFCF6;
+    --ink: #2A2118;
+    --ink-soft: #5A4E40;
+    --sage: #8FA68A;
+    --sage-deep: #5E7B5F;
+    --amber: #D4925E;
+    --amber-deep: #B26F3D;
+    --coral: #D67A6E;
+    --rust: #A8543F;
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'Lora', Georgia, serif;
+    --ui: 'Outfit', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--body);
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(251, 246, 238, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--cream-soft);
+  }
+  .nav-inner {
+    max-width: 1100px; margin: 0 auto;
+    padding: 1.1rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand { display: flex; align-items: center; gap: 0.6rem; font-family: var(--display); font-weight: 600; font-size: 1.4rem; }
+  .brand-flame { width: 28px; height: 28px; }
+  .nav-links { display: flex; gap: 1.6rem; font-family: var(--ui); font-size: 0.95rem; color: var(--ink-soft); }
+  .nav-links a:hover { color: var(--rust); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 88vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-inner { max-width: 980px; margin: 0 auto; width: 100%; position: relative; z-index: 2; }
+  .hero-eyebrow {
+    font-family: var(--ui); font-size: 0.85rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--amber-deep); margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    line-height: 1.04;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    max-width: 18ch;
+  }
+  .hero h1 em { font-style: italic; color: var(--rust); }
+  .hero-lede {
+    font-size: 1.2rem;
+    color: var(--ink-soft);
+    max-width: 48ch;
+    margin-bottom: 2.2rem;
+  }
+  .ctas { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--ui); font-weight: 500; font-size: 0.95rem;
+    padding: 0.85rem 1.6rem; border-radius: 12px; border: none; cursor: pointer;
+    transition: all 160ms ease;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .btn-primary { background: var(--amber); color: var(--paper); }
+  .btn-primary:hover { background: var(--amber-deep); transform: translateY(-1px); }
+  .btn-secondary { background: transparent; border: 1.5px solid var(--sage); color: var(--ink-soft); }
+  .btn-secondary:hover { background: var(--cream-soft); color: var(--ink); }
+
+  .hero-decor {
+    position: absolute; right: -100px; top: 50%; transform: translateY(-50%);
+    opacity: 0.6;
+    z-index: 1;
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 1.5rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-family: var(--ui); font-size: 0.78rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--amber-deep); margin-bottom: 0.8rem;
+  }
+  .section-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 1rem;
+    max-width: 22ch;
+  }
+  .section-lede {
+    font-size: 1.1rem; color: var(--ink-soft); max-width: 60ch; margin-bottom: 3rem;
+  }
+
+  /* ── LEVELS ── */
+  .levels {
+    background: var(--paper);
+    border-top: 1px solid var(--cream-soft);
+    border-bottom: 1px solid var(--cream-soft);
+  }
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .level-card {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid var(--cream-soft);
+    transition: transform 200ms ease;
+  }
+  .level-card:hover { transform: translateY(-3px); }
+  .level-age { font-family: var(--ui); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber-deep); margin-bottom: 0.4rem; }
+  .level-card h3 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .level-card p { color: var(--ink-soft); font-size: 0.98rem; line-height: 1.6; }
+
+  /* ── SHELF ── */
+  .shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.4rem;
+  }
+  .book {
+    background: var(--paper);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(42,33,24,0.04), 0 8px 24px rgba(42,33,24,0.06);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+    cursor: pointer;
+  }
+  .book:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(42,33,24,0.06), 0 16px 32px rgba(42,33,24,0.1); }
+  .book-cover {
+    aspect-ratio: 4/3;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .book-cover.amber { background: var(--amber); }
+  .book-cover.sage { background: var(--sage); }
+  .book-cover.coral { background: var(--coral); }
+  .book-cover.cream { background: var(--cream-soft); }
+  .book-cover svg { opacity: 0.9; }
+  .book-age {
+    position: absolute; top: 0.6rem; right: 0.6rem;
+    background: rgba(42,33,24,0.85); color: var(--paper);
+    font-family: var(--ui); font-size: 0.68rem; padding: 0.2rem 0.55rem; border-radius: 999px;
+  }
+  .book-info { padding: 1.1rem 1.2rem 1.3rem; }
+  .book-info h4 { font-family: var(--display); font-weight: 600; font-size: 1.1rem; margin-bottom: 0.35rem; line-height: 1.25; }
+  .book-info p { font-size: 0.86rem; color: var(--ink-soft); line-height: 1.5; }
+  .book.placeholder { opacity: 0.55; }
+  .book.placeholder .book-cover { background: repeating-linear-gradient(135deg, var(--cream-soft), var(--cream-soft) 10px, var(--cream) 10px, var(--cream) 20px); }
+  .book.placeholder .book-cover::after { content: 'coming soon'; font-family: var(--ui); font-size: 0.78rem; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ── CREATE ── */
+  .create-section { background: var(--paper); border-top: 1px solid var(--cream-soft); }
+  .create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  @media (max-width: 760px) { .create-grid { grid-template-columns: 1fr; gap: 2rem; } }
+  .create-callout {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid var(--cream-soft);
+  }
+  .create-stat { font-family: var(--display); font-size: 3rem; font-weight: 500; color: var(--amber-deep); line-height: 1; margin-bottom: 0.4rem; }
+  .create-stat-label { font-family: var(--ui); font-size: 0.88rem; color: var(--ink-soft); }
+  .create-steps { list-style: none; counter-reset: step; margin-top: 1.5rem; }
+  .create-steps li {
+    padding: 1rem 0 1rem 2.5rem;
+    border-top: 1px solid var(--cream-soft);
+    counter-increment: step;
+    position: relative;
+  }
+  .create-steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 1rem;
+    width: 1.6rem; height: 1.6rem; border-radius: 999px;
+    background: var(--amber); color: var(--paper);
+    font-family: var(--ui); font-size: 0.8rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .create-steps strong { font-family: var(--ui); font-weight: 600; }
+  .create-steps p { color: var(--ink-soft); font-size: 0.92rem; margin-top: 0.2rem; }
+
+  /* ── WHY ── */
+  .why { background: var(--ink); color: var(--paper); }
+  .why h2, .why h3 { color: var(--paper); }
+  .why .section-label { color: var(--amber); }
+  .why p { color: rgba(255,252,246,0.78); font-size: 1.15rem; max-width: 60ch; }
+  .why-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem;
+    margin-top: 3rem;
+  }
+  .why-card h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--cream); }
+  .why-card p { font-size: 0.98rem; color: rgba(255,252,246,0.7); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--cream);
+    border-top: 1px solid var(--cream-soft);
+    padding: 3rem 1.5rem;
+  }
+  .footer-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    font-family: var(--ui); font-size: 0.9rem; color: var(--ink-soft);
+  }
+  .footer-tagline { font-style: italic; opacity: 0.7; }
+
+  /* ── ANIMATIONS ── */
+  .fade-up { opacity: 0; transform: translateY(20px); transition: opacity 700ms ease, transform 700ms ease; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <svg class="brand-flame" viewBox="0 0 32 32">
+        <circle cx="16" cy="20" r="9" fill="#D4925E" opacity="0.35"/>
+        <path d="M16 6 C 14 11, 14 14, 16 18 C 18 14, 18 11, 16 6 Z" fill="#B26F3D"/>
+        <circle cx="16" cy="20" r="2.2" fill="#A8543F"/>
+      </svg>
+      Fablewick
+    </a>
+    <div class="nav-links">
+      <a href="#library">Library</a>
+      <a href="#create">Create</a>
+      <a href="#why">About</a>
+      <a href="https://github.com/" target="_blank">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">A small light · Free · Open source</div>
+    <h1>A quiet library of stories <em>for kids.</em></h1>
+    <p class="hero-lede">Hand-curated tales with a small lesson tucked inside each one. Read what's here, or make your own — a fresh story shaped to your child's reading level. No ads. No accounts. No signup. Ever.</p>
+    <div class="ctas">
+      <a href="#library" class="btn btn-primary">Browse the library →</a>
+      <a href="#create" class="btn btn-secondary">Create your own</a>
+    </div>
+  </div>
+  <div class="hero-decor">
+    <svg width="500" height="500" viewBox="0 0 500 500">
+      <circle cx="320" cy="280" r="180" fill="#D4925E" opacity="0.12"/>
+      <circle cx="380" cy="200" r="100" fill="#8FA68A" opacity="0.18"/>
+      <circle cx="280" cy="380" r="60" fill="#D67A6E" opacity="0.15"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ── LEVELS ── -->
+<section class="levels">
+  <div class="container">
+    <div class="section-label">Three ways to read</div>
+    <h2 class="section-title">Same story. Three sizes.</h2>
+    <p class="section-lede">Every book in the library is written at three reading levels. Pick the one that fits your reader today — and slide up as they grow.</p>
+    <div class="level-grid">
+      <div class="level-card">
+        <div class="level-age">Ages 3–5</div>
+        <h3>Little Listener</h3>
+        <p>Short, warm stories with rhythm and repetition. Made to be read aloud. About 200 words.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-age">Ages 5–7</div>
+        <h3>New Reader</h3>
+        <p>Early chapter-style stories with characters that grow and learn. About 500 words.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-age">Ages 7–10</div>
+        <h3>On Your Own</h3>
+        <p>Richer stories with dialogue, deeper themes, and open questions to think about. About 1,000 words.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SHELF ── -->
+<section id="library">
+  <div class="container">
+    <div class="section-label">The shelf</div>
+    <h2 class="section-title">Ten stories. Each one taught me something.</h2>
+    <p class="section-lede">Every book has a lesson tucked inside — never preached, never announced. The shelf grows with community contributions.</p>
+    <div class="shelf-grid">
+      <a class="book" href="#"><div class="book-cover sage"><svg viewBox="0 0 200 150" width="160"><rect x="0" y="100" width="200" height="50" fill="#5E7B5F" opacity="0.4"/><path d="M100 100 L100 70 M100 70 Q92 65 88 72 M100 70 Q108 65 112 72" stroke="#2A2118" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="100" cy="115" r="6" fill="#B26F3D"/></svg><span class="book-age">3–7</span></div><div class="book-info"><h4>The Brave Little Seed</h4><p>Some good things take a long time.</p></div></a>
+
+      <a class="book" href="#"><div class="book-cover cream"><svg viewBox="0 0 200 150" width="160"><ellipse cx="100" cy="70" rx="45" ry="22" fill="#FFFCF6"/><ellipse cx="75" cy="65" rx="22" ry="15" fill="#FFFCF6"/><ellipse cx="120" cy="62" rx="25" ry="17" fill="#FFFCF6"/><circle cx="100" cy="120" r="8" fill="#B26F3D"/></svg><span class="book-age">4–7</span></div><div class="book-info"><h4>Pip and the Lost Cloud</h4><p>Helping someone find their way home.</p></div></a>
+
+      <a class="book" href="#"><div class="book-cover amber"><svg viewBox="0 0 200 150" width="160"><path d="M0 100 Q50 95 100 100 T200 105 L200 150 L0 150 Z" fill="#8FA68A" opacity="0.5"/><ellipse cx="100" cy="95" rx="28" ry="20" fill="#5A4E40"/></svg><span class="book-age">5–9</span></div><div class="book-info"><h4>The Stone Who Wanted to Roll</h4><p>Be scared and try anyway.</p></div></a>
+
+      <a class="book" href="#"><div class="book-cover coral"><svg viewBox="0 0 200 150" width="160"><rect x="0" y="0" width="200" height="150" fill="#2A2118" opacity="0.85"/><circle cx="40" cy="30" r="1.5" fill="#FFFCF6"/><circle cx="80" cy="20" r="2" fill="#FFFCF6"/><circle cx="130" cy="35" r="1.5" fill="#FFFCF6"/><circle cx="170" cy="25" r="2.5" fill="#FFFCF6"/><circle cx="100" cy="115" r="14" fill="#B26F3D"/></svg><span class="book-age">6–10</span></div><div class="book-info"><h4>Moss and the Map of Stars</h4><p>Some questions stay questions.</p></div></a>
+
+      <a class="book" href="#"><div class="book-cover sage"><svg viewBox="0 0 200 150" width="160"><circle cx="70" cy="100" r="35" fill="#5A4E40"/><ellipse cx="130" cy="110" rx="8" ry="10" fill="#D67A6E"/><circle cx="128" cy="102" r="5" fill="#D67A6E"/></svg><span class="book-age">4–8</span></div><div class="book-info"><h4>The Quiet Bear</h4><p>Sitting with someone is enough.</p></div></a>
+
+      <a class="book" href="#"><div class="book-cover amber"><svg viewBox="0 0 200 150" width="160"><ellipse cx="100" cy="110" rx="35" ry="25" fill="#D4925E"/><path d="M75 90 L65 70 L80 85 Z" fill="#D4925E"/><path d="M125 90 L135 70 L120 85 Z" fill="#D4925E"/><circle cx="90" cy="100" r="3" fill="#2A2118"/><circle cx="110" cy="100" r="3" fill="#2A2118"/></svg><span class="book-age">5–9</span></div><div class="book-info"><h4>The Fox Who Could Not Whistle</h4><p>The hard part is in the middle.</p></div></a>
+
+      <div class="book placeholder"><div class="book-cover"></div><div class="book-info"><h4>The Cleanest Lane</h4><p>A sports story about staying in your own lane.</p></div></div>
+
+      <div class="book placeholder"><div class="book-cover"></div><div class="book-info"><h4>The Garden Dada Made</h4><p>An old man, a grandchild, and what tending teaches.</p></div></div>
+
+      <div class="book placeholder"><div class="book-cover"></div><div class="book-info"><h4>The Boy Who Couldn't Walk</h4><p>FDR for kids — leading from where you are.</p></div></div>
+
+      <div class="book placeholder"><div class="book-cover"></div><div class="book-info"><h4>The Banker's Watch</h4><p>JP Morgan, the panic of 1907, and sitting still.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CREATE ── -->
+<section id="create" class="create-section">
+  <div class="container">
+    <div class="create-grid">
+      <div>
+        <div class="section-label">Or make your own</div>
+        <h2 class="section-title">A fresh story, written just for them.</h2>
+        <p class="section-lede">Tell us what the story should be about. We'll ask your reader's level, then write something new — in about twenty seconds.</p>
+        <ol class="create-steps">
+          <li><strong>Describe the story.</strong><p>A topic, a character's name, an optional lesson to tuck inside.</p></li>
+          <li><strong>Pick a reading level.</strong><p>Little Listener · New Reader · On Your Own.</p></li>
+          <li><strong>Read it. Print it. Keep it.</strong><p>Your story lives in your browser. Nothing is saved on our side.</p></li>
+        </ol>
+      </div>
+      <div class="create-callout">
+        <div class="create-stat">$0</div>
+        <div class="create-stat-label">to make a story. No ads, no signup, no paywall.</div>
+        <div style="height: 1.5rem;"></div>
+        <div class="create-stat">5/day</div>
+        <div class="create-stat-label">free generations per person — keeps the lamp lit for everyone.</div>
+        <div style="height: 1.5rem;"></div>
+        <div class="create-stat">~20s</div>
+        <div class="create-stat-label">to light the wick and write your story.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHY ── -->
+<section id="why" class="why">
+  <div class="container">
+    <div class="section-label">Why we built this</div>
+    <h2 class="section-title">Storytelling is the oldest way of teaching.</h2>
+    <p>Every story here has a small lesson tucked inside — never preached, never on the surface. We built Fablewick because the things that make children kind, brave, patient, and curious have always traveled by story. We didn't want to put a paywall between a kid and a quiet evening.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <h3>Free, forever</h3>
+        <p>No ads. No subscriptions. No premium tier. Donations are optional, never required.</p>
+      </div>
+      <div class="why-card">
+        <h3>Open source</h3>
+        <p>The whole library lives in a public repo. If you write a story, you can contribute it.</p>
+      </div>
+      <div class="why-card">
+        <h3>Built for trust</h3>
+        <p>No accounts. No tracking. No data collection from children. COPPA-safe by design.</p>
+      </div>
+      <div class="why-card">
+        <h3>AI as a feature</h3>
+        <p>The library comes first. AI generation is one small workshop in a much bigger room.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div>© 2026 Fablewick · MIT licensed</div>
+    <div style="display: flex; gap: 1.4rem;">
+      <a href="https://github.com/" target="_blank">GitHub</a>
+      <a href="#why">About</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div class="footer-tagline">A small light.</div>
+  </div>
+</footer>
+
+<script>
+  // Fade-up on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.section-label, .section-title, .section-lede, .level-card, .book, .why-card, .create-callout, .create-steps').forEach(el => {
+    el.classList.add('fade-up');
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>

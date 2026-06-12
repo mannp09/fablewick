@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hands in the Soil — Fablewick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #FBF6EE;
+  --cream-dark: #F0E8DA;
+  --ink: #2A2118;
+  --ink-light: #5A4D3E;
+  --amber: #D4925E;
+  --amber-light: #ECC9A8;
+  --coral: #D67A6E;
+  --sage: #8FA68A;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+  --radius-cozy: 28px;
+  --transition: 0.35s ease;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ───────────────────────────── */
+.book-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: 52px;
+}
+.book-topbar .back-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  transition: background var(--transition), color var(--transition);
+}
+.book-topbar .back-link:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.book-topbar .book-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.book-topbar .page-counter {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+}
+
+/* ── PROGRESS BAR ──────────────────────── */
+.progress-track {
+  position: fixed;
+  top: 52px; left: 0; right: 0;
+  height: 3px;
+  background: rgba(42, 33, 24, 0.06);
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--coral));
+  width: 20%;
+  transition: width 0.5s ease;
+}
+
+/* ── PAGE STAGE ──────────────────────────── */
+.stage {
+  position: fixed;
+  top: 55px; left: 0;
+  right: 0; bottom: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+.page-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Image area */
+.page-illustration {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 8px 32px rgba(42, 33, 24, 0.10);
+}
+.page-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.page-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.page-text p { margin-bottom: 1rem; }
+.page-text p:last-child { margin-bottom: 0; }
+
+/* Wider screens: image left, text right */
+@media (min-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    height: 100%;
+  }
+  .page-illustration {
+    aspect-ratio: 16 / 9;
+  }
+  .page-text {
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Tall screens: text first */
+@media (max-height: 600px) and (max-width: 899px) {
+  .page-illustration { aspect-ratio: 16 / 6; }
+  .page-text { font-size: 0.95rem; }
+}
+
+/* ── NAVIGATION ──────────────────────────── */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.15rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.prev {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-btn.prev:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(-2px);
+}
+.nav-btn.next {
+  background: var(--ink);
+  color: var(--cream);
+}
+.nav-btn.next:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateX(2px);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  letter-spacing: 0.14em;
+}
+.nav-center .dots {
+  display: inline-flex;
+  gap: 0.45rem;
+  vertical-align: middle;
+  margin-right: 0.65rem;
+}
+.nav-center .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(42, 33, 24, 0.18);
+  transition: background var(--transition), transform var(--transition);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-center .dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* ── COVER / END PAGES ──────────────────────── */
+.cover-page, .end-page {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.cover-page .page-inner, .end-page .page-inner {
+  grid-template-columns: 1fr !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.cover-kicker, .end-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1rem;
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  color: var(--ink-light);
+  max-width: 540px;
+  line-height: 1.6;
+}
+.end-mark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--amber);
+  margin-bottom: 1.5rem;
+}
+.end-line {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--ink-light);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.end-back-btn {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition), transform var(--transition);
+}
+.end-back-btn:hover {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.kbd-hint {
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 600px) { .kbd-hint { display: none; } }
+
+/* ── NAV UPGRADE: brand mark, flip zones, 3D page-turn ─────────── */
+.book-topbar .back-link { display: inline-flex; align-items: center; gap: 0.5rem; }
+.book-topbar .back-link .brand-mark {
+  height: 30px; width: auto; display: block; object-fit: contain;
+}
+.book-topbar .back-link .back-label { line-height: 1; }
+@media (max-width: 560px) {
+  .book-topbar .back-link .back-label { display: none; }
+  .book-topbar .back-link .brand-mark { height: 28px; }
+}
+
+/* Click-to-flip side gutters — over the page edges, clear of topbar + nav-bar */
+.flip-zone {
+  position: fixed;
+  top: 58px;
+  bottom: 4.75rem;
+  width: 24%;
+  max-width: 190px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.flip-prev { left: 0; justify-content: flex-start; padding-left: 0.4rem; }
+.flip-next { right: 0; justify-content: flex-end; padding-right: 0.4rem; }
+.flip-zone::before {
+  font-family: var(--font-ui);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink-light);
+  width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(251, 246, 238, 0.82);
+  border-radius: 100px;
+  box-shadow: 0 2px 10px rgba(42, 33, 24, 0.12);
+}
+.flip-prev::before { content: "\2039"; }
+.flip-next::before { content: "\203A"; }
+.flip-zone:hover, .flip-zone:focus-visible { opacity: 1; }
+.flip-zone:focus { outline: none; }
+.flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) {
+  /* touch: show a faint resting hint so kids know the edges are tappable */
+  .flip-zone:not([disabled]) { opacity: 0.5; }
+}
+
+/* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
+.stage { perspective: 2200px; }
+.page {
+  transform-origin: center center;
+  transform: rotateY(0);
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+.page.active { opacity: 1; pointer-events: auto; transform: rotateY(0) translateX(0); }
+.page.enter-fwd  { transition: none; opacity: 0; transform-origin: right center; transform: rotateY(-15deg) translateX(7%); }
+.page.enter-back { transition: none; opacity: 0; transform-origin: left center;  transform: rotateY(15deg)  translateX(-7%); }
+.page.turn-fwd   { opacity: 0; transform-origin: left center;  transform: rotateY(36deg)  translateX(-4%); }
+.page.turn-back  { opacity: 0; transform-origin: right center; transform: rotateY(-36deg) translateX(4%); }
+.page::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.55s ease;
+}
+.page.turn-fwd::after  { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0) 55%, rgba(42,33,24,0.16)); }
+.page.turn-back::after { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0.16), rgba(42,33,24,0) 45%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.active,
+  .page.enter-fwd, .page.enter-back,
+  .page.turn-fwd, .page.turn-back {
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
+  .page::after { display: none !important; }
+}
+
+/* ── COVER REDESIGN: centered wordmark + cover art ─────────────── */
+.book-topbar .topbar-wordmark {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 26px; width: auto; display: block;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .book-topbar .topbar-wordmark { height: 22px; }
+}
+.cover-page .page-inner {
+  justify-content: flex-start;
+  padding-top: 3vh;
+  gap: 1.5rem;
+}
+.cover-art {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 10px 36px rgba(42, 33, 24, 0.14);
+}
+.cover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 600px) {
+  .cover-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .cover-art { max-width: 100%; }
+  .cover-page .page-inner { padding-top: 2vh; }
+}
+
+/* ── DUSK THEME (reader) — night sky + light text/chrome ─────── */
+body { background: linear-gradient(180deg, #1C2A52 0%, #46396A 52%, #B97E7A 100%) !important; background-attachment: fixed !important; }
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#starfield .twk { position: absolute; opacity: 0.16; will-change: opacity, transform; }
+@keyframes fwTw { 0%,40%,100% { opacity: 0.14; transform: scale(0.6); } 47% { opacity: 1; transform: scale(1); } 54% { opacity: 0.14; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { #starfield .twk { animation: none !important; opacity: 0.5 !important; } }
+
+.stage { z-index: 1; }
+.book-topbar { background: rgba(24, 34, 66, 0.74) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+.book-topbar .back-link .back-label { color: #E7DFF3 !important; }
+.page-counter { color: #CFC6DD !important; }
+.progress-track { background: rgba(255,255,255,0.10) !important; }
+
+.page-text, .page-text p { color: #EFE7DD !important; }
+.cover-title { color: #FBF4EC !important; }
+.cover-tagline { color: #E6DAE4 !important; }
+.cover-kicker { color: #E9BD93 !important; }
+.end-mark { color: #E9BD93 !important; }
+.end-line { color: #E6DAE4 !important; }
+
+.nav-bar { background: rgba(24, 34, 66, 0.78) !important; border-top-color: rgba(255,255,255,0.12) !important; }
+.nav-btn.prev { background: rgba(255,255,255,0.12) !important; color: #EADFF0 !important; }
+.nav-btn.next { background: #F3ECE2 !important; color: #2A2342 !important; }
+.nav-center { color: #CFC6DD !important; }
+.nav-center .dot { background: rgba(255,255,255,0.28) !important; }
+.nav-center .dot.active { background: #E9BD93 !important; }
+</style>
+</head>
+<body>
+<div id="starfield" aria-hidden="true"></div>
+
+<div class="book-topbar">
+  <a href="fablewick-landing.html" class="back-link" aria-label="Fablewick home"><img class="brand-mark" src="../src/assets/fablewick-mark.png" alt="Fablewick"><span class="back-label">Library</span></a>
+  
+  <div class="page-counter" id="pageCounter">1 / 7</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage" role="main">
+  <button class="flip-zone flip-prev" id="flipPrev" type="button" aria-label="Previous page" tabindex="-1"></button>
+  <button class="flip-zone flip-next" id="flipNext" type="button" aria-label="Next page" tabindex="-1"></button>
+
+  <!-- PAGE 1: COVER -->
+  <section class="page cover-page active" data-page="1">
+    <div class="page-inner">
+      <h1 class="cover-title">Hands in the Soil</h1>
+      <div class="cover-art"><img src="../src/assets/pages/hands-in-the-soil/cover.jpg" alt=""></div>
+      <p class="cover-tagline">A story for ages 5–9 about love that grows one seed at a time</p>
+    </div>
+  </section>
+
+  <!-- PAGE 2: Dada in the garden + come, hold this -->
+  <section class="page" data-page="2">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/hands-in-the-soil/page-01.jpg" alt="Dada kneeling in the garden in his dusty kurta, calling the kid over" onerror="this.onerror=null;this.src='../src/assets/pages/hands-in-the-soil/page-01.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Dada does not say I love you.</p>
+        <p>He says, "Come. Hold this."</p>
+        <p>Most mornings he is already kneeling in the garden when the kid wakes up: kurta dusty at the knees, hands brown and weathered, humming under his breath.</p>
+        <p>His face looks a little stern. It always looks a little stern.</p>
+        <p>But Dada says come, so the kid comes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: Planting the seed + the watering lesson -->
+  <section class="page" data-page="3">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/hands-in-the-soil/page-02.jpg" alt="Dada pressing a single seed into the soil of a small clay pot while the kid holds the watering can" onerror="this.onerror=null;this.src='../src/assets/pages/hands-in-the-soil/page-02.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Dada shows how to press two fingers into the soil, just deep enough, no deeper. He sets one seed in the hole and covers it gently, like tucking something in.</p>
+        <p>"Now water," he says. "Enough to make the soil dark. Stop before it puddles."</p>
+        <p>The kid waters. The soil goes dark. No puddle.</p>
+        <p>"Good," says Dada.</p>
+        <p>That is all he says.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4: Every morning come + the green line appears -->
+  <section class="page" data-page="4">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/hands-in-the-soil/page-03.jpg" alt="A thin green sprout, fine as a thread, rising from the dark soil of the clay pot" onerror="this.onerror=null;this.src='../src/assets/pages/hands-in-the-soil/page-03.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Every morning: come, hold this, water, stop. And every morning the dirt just sits there, dark and quiet, doing nothing at all.</p>
+        <p>Nothing happens. Nothing happens. Nothing happens.</p>
+        <p>Then one morning — a green line, thin as a thread, rising out of the soil.</p>
+        <p>The kid stares, nose almost in the pot.</p>
+        <p>Dada does not make a fuss. He just nods.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5: Leaves, flower, tomato + the first bite -->
+  <section class="page" data-page="5">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/hands-in-the-soil/page-04.jpg" alt="Dada cutting the first red tomato on a wooden board and handing half to the kid" onerror="this.onerror=null;this.src='../src/assets/pages/hands-in-the-soil/page-04.jpg'">
+      </div>
+      <div class="page-text">
+        <p>A leaf unfolds. Then two. Then a small yellow flower. Then a tomato: first a pale green button, then swelling, then blushing, then one morning fully red and heavy on its stem.</p>
+        <p>Dada picks it with both hands. In the kitchen he slices it on the wooden board and gives the kid half.</p>
+        <p>The kid bites in. It is warm from the sun. The juice runs down the kid's chin, and the kid does not care one bit.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 6: We grew this + come tomorrow -->
+  <section class="page" data-page="6">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/hands-in-the-soil/page-05.jpg" alt="The kid holding half a tomato, looking up at Dada in the garden" onerror="this.onerror=null;this.src='../src/assets/pages/hands-in-the-soil/page-05.jpg'">
+      </div>
+      <div class="page-text">
+        <p>"We grew this," says the kid.</p>
+        <p>"Yes," says Dada.</p>
+        <p>The kid looks up at him — dusty knees, rough hands, the face that always looks a little stern and is not stern right now. Almost a smile.</p>
+        <p>And standing there in the golden morning, holding half a tomato, the kid understands.</p>
+        <p>Dada never says I love you.</p>
+        <p>He says it every morning, in the dirt.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 7: END -->
+  <section class="page end-page" data-page="7">
+    <div class="page-inner">
+      <div class="end-mark">— The End —</div>
+      <p class="end-line">Some things grow because someone kneels in the dirt every single day. Not because they have to. Because they love you.</p>
+      <a href="fablewick-landing.html" class="end-back-btn">← Back to the library</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar" role="navigation" aria-label="Story pages">
+  <button class="nav-btn prev" id="prevBtn" disabled aria-label="Previous page">← Back</button>
+  <div class="nav-center">
+    <span class="dots" id="dots"></span>
+    <span id="pageLabel" aria-live="polite">Page 1 of 7</span>
+  </div>
+  <button class="nav-btn next" id="nextBtn" aria-label="Next page">Next →</button>
+</div>
+
+<script>
+// ─── i18n data (inlined to avoid file:// fetch issues) ────────
+const I18N = {"pageTexts": {"en": ["Dada does not say I love you.\n\nHe says, \"Come. Hold this.\"\n\nMost mornings he is already kneeling in the garden when the kid wakes up: kurta dusty at the knees, hands brown and weathered, humming under his breath.\n\nHis face looks a little stern. It always looks a little stern.\n\nBut Dada says come, so the kid comes.", "Dada shows how to press two fingers into the soil, just deep enough, no deeper. He sets one seed in the hole and covers it gently, like tucking something in.\n\n\"Now water,\" he says. \"Enough to make the soil dark. Stop before it puddles.\"\n\nThe kid waters. The soil goes dark. No puddle.\n\n\"Good,\" says Dada.\n\nThat is all he says.", "Every morning: come, hold this, water, stop. And every morning the dirt just sits there, dark and quiet, doing nothing at all.\n\nNothing happens. Nothing happens. Nothing happens.\n\nThen one morning — a green line, thin as a thread, rising out of the soil.\n\nThe kid stares, nose almost in the pot.\n\nDada does not make a fuss. He just nods.", "A leaf unfolds. Then two. Then a small yellow flower. Then a tomato: first a pale green button, then swelling, then blushing, then one morning fully red and heavy on its stem.\n\nDada picks it with both hands. In the kitchen he slices it on the wooden board and gives the kid half.\n\nThe kid bites in. It is warm from the sun. The juice runs down the kid's chin, and the kid does not care one bit.", "\"We grew this,\" says the kid.\n\n\"Yes,\" says Dada.\n\nThe kid looks up at him — dusty knees, rough hands, the face that always looks a little stern and is not stern right now. Almost a smile.\n\nAnd standing there in the golden morning, holding half a tomato, the kid understands.\n\nDada never says I love you.\n\nHe says it every morning, in the dirt."], "hi": ["दादा \"मैं तुमसे प्यार करता हूँ\" नहीं कहते।\n\nवह कहते हैं: \"आओ। इसे पकड़ो।\"\n\nजब बच्चा उठता है तब तक दादा अक्सर बगीचे में घुटनों के बल बैठे होते हैं। उनके कुर्ता के घुटनों पर धूल जमी होती है। उनके हाथ भूरे और मौसम की मार खाए हुए हैं, उँगलियों के जोड़ लकड़ी की छोटी गाँठों जैसे हैं। वह सख़्त दिखते हैं — उनका चेहरा हमेशा थोड़ा सख़्त दिखता है — लेकिन वह अपनी साँस के नीचे कुछ गुनगुना रहे हैं।\n\n\"हम क्या कर रहे हैं?\" बच्चा पूछता है।\n\nदादा अपने सामने रखे छोटे मिट्टी के गमले की ओर इशारा करते हैं। \"हम पौधा लगा रहे हैं।\"\n\nबच्चे को समझ नहीं आता कि यह क्यों ज़रूरी है। बच्चे के पास करने को बहुत कुछ है। कार्टून हैं। सोफे पर अच्छी जगह है।\n\nलेकिन दादा \"आओ\" कहते हैं, तो बच्चा आता है।", "दादा दिखाते हैं कि दो उँगलियों से मिट्टी में छेद कैसे बनाया जाता है — बस इतना गहरा, और गहरा नहीं। वह छेद में एक बीज रखते हैं। एक बीज। वह उसे ऐसे ढकते हैं जैसे यह कोई चीज़ हो जो ध्यान से ढकने के लायक है।\n\n\"अब पानी दो,\" दादा कहते हैं, और डिब्बा थमा देते हैं।\n\n\"कितना?\"\n\n\"इतना कि मिट्टी काली हो जाए। इतना नहीं कि पानी जमा हो जाए।\"\n\nबच्चा पानी देता है। मिट्टी काली हो जाती है। पानी जमा नहीं होता।\n\n\"अच्छा,\" दादा कहते हैं।\n\nबस इतना ही कहते हैं।", "अगली सुबह: आओ। उसकी अगली सुबह: आओ।\n\nहर सुबह बच्चा पानी का डिब्बा पकड़ता है और पानी मिट्टी पर एक नरम, फुहार की तरह गिरता है। हर सुबह, कुछ भी अलग नहीं दिखता। मिट्टी बस वहीं बैठी रहती है, पानी से काली, चुप।\n\nहफ़्ते बीतते हैं। बच्चा इसके बारे में कुछ खास सोचना बंद कर देता है और इसे ऐसी चीज़ समझने लगता है जो बस सुबह होती है, जैसे दाँत साफ़ करना।\n\nऔर फिर एक सुबह — एक हरी रेखा, धागे जैसी पतली, मिट्टी से ऊपर उठती हुई।\n\nबच्चा देखता रह जाता है। दादा इसे कोई बड़ी बात नहीं बनाते। वह बस सिर हिलाते हैं।", "और दिन। एक पत्ता खुलता है। फिर दो। फिर एक छोटा पीला फूल जिसमें हल्की सी खुशबू है जिसका नाम बच्चे को नहीं पता।\n\nफिर एक टमाटर — पहले एक हल्का हरा बटन, फिर बढ़ता हुआ, फिर शरमाता हुआ, फिर एक सुबह पूरी तरह लाल और अपनी डंडी पर भारी।\n\nदादा उसे दोनों हाथों से तोड़ते हैं। उसे अंदर ले जाते हैं। लकड़ी के तख्ते पर ध्यान से काटते हैं।\n\nवह बच्चे को आधा देते हैं।\n\nबच्चा एक काट लेता है। यह सुबह की धूप से गर्म है। इसका स्वाद चमकीला और थोड़ा मीठा और थोड़ा तेज़ है, और रस ठोड़ी पर बहता है और बच्चे को परवाह भी नहीं।", "\"हमने इसे उगाया,\" बच्चा कहता है।\n\n\"हाँ,\" दादा कहते हैं।\n\nबच्चा उनकी ओर देखता है — उनके धूल भरे घुटनों की ओर, उनके खुरदरे हाथों की ओर, उनके चेहरे की ओर जो हमेशा थोड़ा सख़्त दिखता है लेकिन अभी सख़्त नहीं है।\n\n\"दादा — आप यह हर दिन क्यों करते हैं?\"\n\nदादा टमाटर का दूसरा आधा हिस्सा उठाते हैं। एक पल के लिए उसे देखते हैं।\n\nफिर वह बच्चे की ओर देखते हैं।\n\n\"कल आना,\" वह कहते हैं। \"मैं तुम्हें दिखाऊँगा।\"\n\nऔर बच्चा पहले से ही जानता है कि जवाब टमाटरों के बारे में नहीं है।"], "gu": ["દાદા \"હું તને પ્રેમ કરું છું\" નથી કહેતા.\n\nતે કહે છે: \"આવ. આ પકડ.\"\n\nજ્યારે બાળક જાગે છે ત્યારે મોટેભાગે દાદા બગીચામાં ઘૂંટણિયે બેઠેલા હોય છે. તેમના કુર્તા ના ઘૂંટણ ધૂળવાળા છે. તેમના હાથ ભૂરા અને હવામાનથી ઘસાયેલા છે, સાંધાઓ લાકડાની નાની ગાંઠો જેવા છે. તે કડક દેખાય છે — તેમનો ચહેરો હંમેશા થોડો કડક દેખાય છે — પણ તે પોતાના શ્વાસ નીચે કંઈક ગણગણાવી રહ્યા છે.\n\n\"આપણે શું કરી રહ્યા છીએ?\" બાળક પૂછે છે.\n\nદાદા પોતાની સામેના નાના માટીના ગમલા તરફ ઈશારો કરે છે. \"આપણે વાવી રહ્યા છીએ.\"\n\nબાળકને નથી સમજાતું કે આ કેમ મહત્વનું છે. બાળકને કરવાનું ઘણું છે. કાર્ટૂન છે. સોફા પર સારી જગ્યા છે.\n\nપણ દાદા કહે છે આવ, તો બાળક આવે છે.", "દાદા બતાવે છે કે બે આંગળીઓથી માટીમાં છિદ્ર કેવી રીતે બનાવવું — બસ એટલું ઊંડું, વધારે નહીં. તે છિદ્રમાં બીજ મૂકે છે. એક બીજ. તે તેને એવી રીતે ઢાંકે છે જાણે તે કોઈ વસ્તુ હોય જે કાળજીપૂર્વક ઢાંકવા લાયક છે.\n\n\"હવે પાણી,\" દાદા કહે છે, અને ડબ્બો સોંપે છે.\n\n\"કેટલું?\"\n\n\"એટલું કે માટી કાળી થઈ જાય. એટલું નહીં કે પાણી ભરાય.\"\n\nબાળક પાણી આપે છે. માટી કાળી થાય છે. પાણી ભરાતું નથી.\n\n\"સારું,\" દાદા કહે છે.\n\nબસ આટલું જ કહે છે.", "બીજી સવારે: આવ. તેની બીજી સવારે: આવ.\n\nદર સવારે બાળક પાણીનો ડબ્બો પકડે છે અને પાણી માટી પર નરમ ફુવારાની જેમ પડે છે. દર સવારે, કંઈ અલગ દેખાતું નથી. માટી બસ ત્યાં બેઠી રહે છે, પાણીથી કાળી, શાંત.\n\nઅઠવાડિયા પસાર થાય છે. બાળક તેને ખાસ વસ્તુ તરીકે વિચારવાનું બંધ કરે છે અને તેને એવી વસ્તુ તરીકે વિચારવાનું શરૂ કરે છે જે બસ સવારે થાય છે, જેમ કે દાંત સાફ કરવા.\n\nઅને પછી એક સવારે — એક લીલી રેખા, દોરા જેવી પાતળી, માટીમાંથી ઉપર ઊઠતી.\n\nબાળક જોતો રહે છે. દાદા તેને મોટી વાત નથી બનાવતા. તે બસ માથું હલાવે છે.", "વધુ દિવસો. એક પાન ખૂલે છે. પછી બે. પછી એક નાનું પીળું ફૂલ જેમાં હળવી સુગંધ છે જેનું નામ બાળકને નથી ખબર.\n\nપછી એક ટામેટું — પહેલા ઝાંખું લીલું બટન, પછી ફૂલતું, પછી શરમાતું, પછી એક સવારે સંપૂર્ણ લાલ અને તેની ડાંડી પર ભારે.\n\nદાદા તેને બંને હાથોથી તોડે છે. તેને અંદર લઈ જાય છે. લાકડાના પાટિયા પર કાળજીપૂર્વક કાપે છે.\n\nતે બાળકને અડધો આપે છે.\n\nબાળક એક બાઈટ લે છે. તે સવારના સૂરજથી ગરમ છે. તેનો સ્વાદ ચમકતો અને થોડો મીઠો અને થોડો તીખો છે, અને રસ નીચે ટપકે છે અને બાળકને પરવા પણ નથી.", "\"આપણે આ ઉગાડ્યું,\" બાળક કહે છે.\n\n\"હા,\" દાદા કહે છે.\n\nબાળક તેમની તરફ જુએ છે — તેમના ધૂળવાળા ઘૂંટણ તરફ, તેમના ખરબચડા હાથો તરફ, તેમના ચહેરા તરફ જે હંમેશા થોડો કડક દેખાય છે પણ અત્યારે કડક નથી.\n\n\"દાદા — તમે આ દર રોજ કેમ કરો છો?\"\n\nદાદા ટામેટાનો બીજો અડધો ભાગ ઉપાડે છે. એક ક્ષણ માટે તેને જુએ છે.\n\nપછી તે બાળક તરફ જુએ છે.\n\n\"કાલે આવજે,\" તે કહે છે. \"હું તને બતાવીશ.\"\n\nઅને બાળક પહેલેથી જ જાણે છે કે જવાબ ટામેટાં વિશે નથી."], "es": ["Dada no dice te quiero.\n\nDice: \"Ven. Sostén esto.\"\n\nLa mayoría de las mañanas, ya está arrodillado en el jardín cuando el niño se despierta. Su kurta está polvoriento en las rodillas. Sus manos son morenas y curtidas, los nudillos como pequeños nudos de madera. Se ve serio — su cara siempre se ve un poco seria — pero está tarareando algo en voz baja.\n\n\"¿Qué estamos haciendo?\" pregunta el niño.\n\nDada señala la pequeña maceta de barro frente a él. \"Estamos plantando.\"\n\nEl niño no ve por qué esto importa. El niño tiene cosas que hacer. Hay dibujos animados. Hay el buen lugar en el sofá.\n\nPero Dada dice ven, así que el niño viene.", "Dada le muestra cómo hacer un hoyo en la tierra con dos dedos — solo lo suficientemente profundo, no más. Coloca una semilla en el hoyo. Una semilla. La cubre como si fuera algo que merece ser cubierto con cuidado.\n\n\"Ahora agua,\" dice Dada, y le entrega la regadera.\n\n\"¿Cuánta?\"\n\n\"La suficiente para que la tierra esté oscura. No tanta que se encharque.\"\n\nEl niño riega. La tierra se pone oscura. No hay charco.\n\n\"Bien,\" dice Dada.\n\nEso es todo lo que dice.", "A la mañana siguiente: ven. La mañana después: ven.\n\nCada mañana el niño sostiene la regadera y el agua cae en una suave lluvia silbante sobre la tierra. Cada mañana, nada se ve diferente. La tierra simplemente está ahí, oscura del riego, callada.\n\nPasan semanas. El niño deja de pensar en esto como algo especial y empieza a pensarlo como algo que simplemente pasa por la mañana, como cepillarse los dientes.\n\nY entonces una mañana — una línea verde, fina como un hilo, subiendo a través de la tierra.\n\nEl niño se queda mirando. Dada no hace gran cosa de ello. Solo asiente.", "Más días. Una hoja se despliega. Luego dos. Luego una pequeña flor amarilla que huele tenuemente a algo que el niño no puede nombrar.\n\nLuego un tomate — primero un botón verde pálido, luego hinchándose, luego sonrojándose, luego una mañana completamente rojo y pesado en su tallo.\n\nDada lo recoge con ambas manos. Lo lleva adentro. Lo corta con cuidado sobre la tabla de madera.\n\nLe da al niño una mitad.\n\nEl niño le da un mordisco. Está tibio por el sol de la mañana. Sabe brillante y un poco dulce y un poco fuerte, y el jugo le corre y al niño ni le importa.", "\"Nosotros cultivamos esto,\" dice el niño.\n\n\"Sí,\" dice Dada.\n\nEl niño lo mira — sus rodillas polvorientas, sus manos ásperas, su cara que siempre se ve un poco seria pero ahora no lo está.\n\n\"Dada — ¿por qué haces esto todos los días?\"\n\nDada recoge la segunda mitad del tomate. La mira por un momento.\n\nLuego mira al niño.\n\n\"Ven mañana,\" dice. \"Te mostraré.\"\n\nY el niño ya sabe que la respuesta no es sobre tomates."], "fr": ["Dada ne dit pas je t'aime.\n\nIl dit: \"Viens. Tiens ça.\"\n\nLa plupart des matins, il est déjà agenouillé dans le jardin quand l'enfant se réveille. Son kurta est poussiéreux aux genoux. Ses mains sont brunes et tannées, les jointures comme de petits nœuds de bois. Il a l'air sévère — son visage a toujours l'air un peu sévère — mais il fredonne quelque chose sous son souffle.\n\n\"Qu'est-ce qu'on fait?\" demande l'enfant.\n\nDada montre le petit pot en argile devant lui. \"On plante.\"\n\nL'enfant ne voit pas pourquoi cela importe. L'enfant a des choses à faire. Il y a des dessins animés. Il y a la bonne place sur le canapé.\n\nMais Dada dit viens, alors l'enfant vient.", "Dada montre comment faire un trou dans la terre avec deux doigts — juste assez profond, pas plus. Il place une graine dans le trou. Une graine. Il la recouvre comme si c'était quelque chose qui mérite d'être recouvert avec soin.\n\n\"Maintenant arrose,\" dit Dada, et lui tend l'arrosoir.\n\n\"Combien?\"\n\n\"Assez pour que la terre soit sombre. Pas assez pour que ça fasse une flaque.\"\n\nL'enfant arrose. La terre devient sombre. Pas de flaque.\n\n\"Bien,\" dit Dada.\n\nC'est tout ce qu'il dit.", "Le lendemain matin: viens. Le matin d'après: viens.\n\nChaque matin, l'enfant tient l'arrosoir et l'eau tombe en une douce pluie sifflante sur la terre. Chaque matin, rien ne semble différent. La terre reste juste là, sombre d'avoir été arrosée, silencieuse.\n\nLes semaines passent. L'enfant cesse d'y penser comme à quelque chose de spécial et commence à y penser comme à quelque chose qui arrive simplement le matin, comme se brosser les dents.\n\nEt puis un matin — une ligne verte, fine comme un fil, montant à travers la terre.\n\nL'enfant fixe. Dada n'en fait pas une grande affaire. Il hoche simplement la tête.", "Plus de jours. Une feuille se déplie. Puis deux. Puis une petite fleur jaune qui sent vaguement quelque chose que l'enfant ne peut pas nommer.\n\nPuis une tomate — d'abord un bouton vert pâle, puis qui gonfle, puis qui rougit, puis un matin entièrement rouge et lourde sur sa tige.\n\nDada la cueille à deux mains. La porte à l'intérieur. La coupe soigneusement sur la planche en bois.\n\nIl donne à l'enfant la moitié.\n\nL'enfant mord dedans. C'est chaud du soleil du matin. Ça a un goût vif et un peu sucré et un peu acide, et le jus coule et l'enfant s'en moque.", "\"On a fait pousser ça,\" dit l'enfant.\n\n\"Oui,\" dit Dada.\n\nL'enfant le regarde — ses genoux poussiéreux, ses mains rugueuses, son visage qui a toujours l'air un peu sévère mais ne l'est pas en ce moment.\n\n\"Dada — pourquoi fais-tu ça tous les jours?\"\n\nDada ramasse la seconde moitié de la tomate. La regarde un moment.\n\nPuis il regarde l'enfant.\n\n\"Viens demain,\" dit-il. \"Je te montrerai.\"\n\nEt l'enfant sait déjà que la réponse n'est pas à propos des tomates."]}, "covers": {"en": "A story for ages 5–9 about love that grows one seed at a time", "hi": "उम्र 5–9 के लिए एक कहानी, इस बारे में कि प्यार कैसे एक-एक बीज करके उगता है", "gu": "ઉંમર 5–9 માટેની વાર્તા, એ વિશે કે પ્રેમ કેવી રીતે એક-એક બીજથી ઊગે છે", "es": "Una historia para edades 5–9 sobre el amor que crece semilla a semilla", "fr": "Une histoire pour les 5–9 ans sur l'amour qui grandit graine après graine"}, "ends": {"en": "Some things grow because someone kneels in the dirt every single day. Not because they have to. Because they love you.", "hi": "कुछ चीज़ें इसलिए उगती हैं क्योंकि कोई हर एक दिन मिट्टी में घुटनों के बल बैठता है। इसलिए नहीं कि उसे बैठना पड़ता है। इसलिए कि वह तुमसे प्यार करता है।", "gu": "કેટલીક વસ્તુઓ એટલા માટે ઊગે છે કારણ કે કોઈ દર એક દિવસ માટીમાં ઘૂંટણિયે બેસે છે. એટલા માટે નહીં કે બેસવું પડે છે. એટલા માટે કે તે તને પ્રેમ કરે છે.", "es": "Algunas cosas crecen porque alguien se arrodilla en la tierra todos los días. No porque tenga que hacerlo. Porque te quiere.", "fr": "Certaines choses poussent parce que quelqu'un s'agenouille dans la terre chaque jour. Pas parce qu'il le doit. Parce qu'il t'aime."}, "back_labels": {"en": "← Library", "hi": "← पुस्तकालय", "gu": "← પુસ્તકાલય", "es": "← Biblioteca", "fr": "← Bibliothèque"}, "end_btn": {"en": "← Back to the library", "hi": "← पुस्तकालय पर वापस", "gu": "← પુસ્તકાલય પર પાછા", "es": "← Volver a la biblioteca", "fr": "← Retour à la bibliothèque"}, "titles": {"en": "Hands in the Soil", "hi": "मिट्टी में हाथ", "gu": "માટીમાં હાથ", "es": "Manos en la Tierra", "fr": "Les Mains dans la Terre"}, "kickers": {"en": "Fablewick", "hi": "फेबलविक", "gu": "ફેબલવિક", "es": "Fablewick", "fr": "Fablewick"}, "end_marks": {"en": "— The End —", "hi": "— समाप्त —", "gu": "— સમાપ્ત —", "es": "— Fin —", "fr": "— Fin —"}, "nav_prev": {"en": "← Back", "hi": "← पीछे", "gu": "← પાછળ", "es": "← Atrás", "fr": "← Retour"}, "nav_next": {"en": "Next →", "hi": "आगे →", "gu": "આગળ →", "es": "Siguiente →", "fr": "Suivant →"}, "page_label": {"en": "Page {n} of {t}", "hi": "पृष्ठ {n} / {t}", "gu": "પૃષ્ઠ {n} / {t}", "es": "Página {n} de {t}", "fr": "Page {n} sur {t}"}};
+
+// Read persisted language from the landing page's localStorage
+const LANG_KEY = 'fablewick.lang';
+const SUPPORTED_LANGS = ['en', 'hi', 'gu', 'es', 'fr'];
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return SUPPORTED_LANGS.includes(saved) ? saved : 'en';
+  } catch (e) { return 'en'; }
+})();
+
+// Apply translations on page load
+document.addEventListener('DOMContentLoaded', () => {
+  applyLanguage(currentLang);
+});
+
+function applyLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) lang = 'en';
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Cover tagline + end line + back labels
+  const coverTagline = document.querySelector('.cover-tagline');
+  if (coverTagline) coverTagline.textContent = I18N.covers[lang] || I18N.covers.en;
+
+  const endLine = document.querySelector('.end-line');
+  if (endLine) endLine.textContent = I18N.ends[lang] || I18N.ends.en;
+
+  const backLabel = document.querySelector('.book-topbar .back-link .back-label');
+  if (backLabel) backLabel.textContent = (I18N.back_labels[lang] || I18N.back_labels.en).replace(/^[←\s]+/, '');
+
+  const endBtn = document.querySelector('.end-back-btn');
+  if (endBtn) endBtn.textContent = I18N.end_btn[lang] || I18N.end_btn.en;
+
+  // Cover title + kicker, end mark, topbar book name, document title — native script
+  const coverTitle = document.querySelector('.cover-title');
+  if (coverTitle && I18N.titles) coverTitle.textContent = I18N.titles[lang] || I18N.titles.en;
+
+  const coverKicker = document.querySelector('.cover-kicker');
+  if (coverKicker && I18N.kickers) coverKicker.textContent = I18N.kickers[lang] || I18N.kickers.en;
+
+  const endMark = document.querySelector('.end-mark');
+  if (endMark && I18N.end_marks) endMark.textContent = I18N.end_marks[lang] || I18N.end_marks.en;
+
+  // topbar shows the Fablewick wordmark (image) — always English, never translated
+  if (I18N.titles) document.title = (I18N.titles[lang] || I18N.titles.en) + ' — Fablewick';
+
+  const prevB = document.getElementById('prevBtn');
+  if (prevB && I18N.nav_prev) prevB.textContent = I18N.nav_prev[lang] || I18N.nav_prev.en;
+  const nextB = document.getElementById('nextBtn');
+  if (nextB && I18N.nav_next) nextB.textContent = I18N.nav_next[lang] || I18N.nav_next.en;
+
+  if (typeof updateUI === 'function') updateUI();
+
+  // Page-by-page story text — pages with class .image-page or just .page (not cover/end)
+  // Use a fixed 5-page mapping: the 5 content pages between cover and end
+  const contentPages = Array.from(document.querySelectorAll('.page'))
+    .filter(p => !p.classList.contains('cover-page') && !p.classList.contains('end-page'));
+  const pageTextsForLang = I18N.pageTexts[lang] || I18N.pageTexts.en;
+  contentPages.forEach((pageEl, idx) => {
+    const textEl = pageEl.querySelector('.page-text');
+    if (!textEl || !pageTextsForLang[idx]) return;
+    // Split into <p> paragraphs by double newline
+    const html = pageTextsForLang[idx]
+      .split(/\n\s*\n/)
+      .map(p => '<p>' + escapeForHtml(p.trim()) + '</p>')
+      .join('');
+    textEl.innerHTML = html;
+  });
+}
+
+function escapeForHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+const pages = Array.from(document.querySelectorAll('.page'));
+const total = pages.length;
+let currentIdx = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipPrev = document.getElementById('flipPrev');
+const flipNext = document.getElementById('flipNext');
+const pageCounter = document.getElementById('pageCounter');
+const pageLabel = document.getElementById('pageLabel');
+const progressFill = document.getElementById('progressFill');
+const dotsEl = document.getElementById('dots');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.dataset.idx = i;
+  d.setAttribute('aria-label', 'Go to page ' + (i + 1));
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function goTo(newIdx) {
+  if (newIdx < 0 || newIdx >= total || newIdx === currentIdx) return;
+  const dir = newIdx > currentIdx ? 1 : -1;
+  const oldPage = pages[currentIdx];
+  const newPage = pages[newIdx];
+
+  // incoming page: preset on the side it enters from (no transition for the preset)
+  newPage.classList.remove('active', 'turn-fwd', 'turn-back', 'enter-fwd', 'enter-back');
+  newPage.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+  void newPage.offsetWidth;            // commit the preset before animating
+
+  // outgoing page turns away like a leaf
+  oldPage.classList.remove('active');
+  oldPage.classList.add(dir > 0 ? 'turn-fwd' : 'turn-back');
+
+  // incoming page settles flat
+  newPage.classList.remove('enter-fwd', 'enter-back');
+  newPage.classList.add('active');
+
+  setTimeout(() => {
+    oldPage.classList.remove('turn-fwd', 'turn-back', 'exit-left');
+    const txt = newPage.querySelector('.page-text');
+    if (txt) txt.scrollTop = 0;
+  }, 600);
+
+  currentIdx = newIdx;
+  updateUI();
+}
+
+function updateUI() {
+  const n = currentIdx + 1;
+  pageCounter.textContent = `${n} / ${total}`;
+  const labelTmpl = (I18N.page_label && (I18N.page_label[currentLang] || I18N.page_label.en)) || 'Page {n} of {t}';
+  pageLabel.textContent = labelTmpl.replace('{n}', n).replace('{t}', total);
+  progressFill.style.width = (n / total * 100) + '%';
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === total - 1;
+  if (flipPrev) flipPrev.disabled = currentIdx === 0;
+  if (flipNext) flipNext.disabled = currentIdx === total - 1;
+  var _wm = document.querySelector('.topbar-wordmark');
+  if (_wm) _wm.style.display = currentIdx === 0 ? '' : 'none';
+  Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+if (flipPrev) flipPrev.addEventListener('click', () => goTo(currentIdx - 1));
+if (flipNext) flipNext.addEventListener('click', () => goTo(currentIdx + 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { goTo(currentIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { goTo(currentIdx - 1); e.preventDefault(); }
+  if (e.key === 'Escape') { window.location.href = 'fablewick-landing.html'; }
+});
+
+updateUI();
+
+// ─── DUSK THEME starfield (reader) ────────────────────────────
+(function () {
+  var sky = document.getElementById('starfield');
+  if (!sky) return;
+  var spark = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z" fill="#FFF6E0"/></svg>';
+  var n = Math.max(30, Math.min(80, Math.round(window.innerWidth * window.innerHeight / 16000)));
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('div');
+    s.className = 'twk';
+    var size = (3 + Math.random() * 6).toFixed(1);
+    s.style.left = (Math.random() * 99).toFixed(1) + '%';
+    s.style.top = (Math.random() * 92).toFixed(1) + '%';
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.animation = 'fwTw ' + (2.4 + Math.random() * 3.2).toFixed(2) + 's ease-in-out ' + (Math.random() * 6).toFixed(2) + 's infinite';
+    s.innerHTML = spark;
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

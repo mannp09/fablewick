@@ -1,0 +1,24 @@
+---
+const path = Astro.url.pathname;
+const isLibrary = path === '/' || path.startsWith('/book');
+const isCreate = path.startsWith('/create');
+const isAbout = path.startsWith('/about');
+---
+
+<header class="border-b border-[var(--color-cream-soft)] bg-[var(--color-cream)]">
+  <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 group" aria-label="Fablewick home">
+      <svg viewBox="0 0 32 32" class="w-8 h-8" aria-hidden="true">
+        <circle cx="16" cy="20" r="9" fill="var(--color-amber)" opacity="0.25" />
+        <path d="M16 6 C 14 11, 14 14, 16 18 C 18 14, 18 11, 16 6 Z" fill="var(--color-amber-deep)" />
+        <circle cx="16" cy="20" r="2" fill="var(--color-rust)" />
+      </svg>
+      <span style="font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; color: var(--color-ink);">Fablewick</span>
+    </a>
+    <nav class="flex items-center gap-1" style="font-family: var(--font-ui);">
+      <a href="/" class={`px-3 py-2 text-sm rounded-lg transition ${isLibrary ? 'text-[var(--color-rust)] font-medium' : 'text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]'}`}>Library</a>
+      <a href="/create" class={`px-3 py-2 text-sm rounded-lg transition ${isCreate ? 'text-[var(--color-rust)] font-medium' : 'text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]'}`}>Create</a>
+      <a href="/about" class={`px-3 py-2 text-sm rounded-lg transition ${isAbout ? 'text-[var(--color-rust)] font-medium' : 'text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]'}`}>About</a>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,39 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  ageRange: [number, number];
+  summary: string;
+  themes: string[];
+  coverColor: string;
+  coverIllustration: string;
+}
+
+const { slug, title, ageRange, summary, themes, coverColor, coverIllustration } = Astro.props;
+
+const palettes: Record<string, { bg: string; accent: string }> = {
+  amber: { bg: 'var(--color-amber)', accent: 'var(--color-amber-deep)' },
+  sage: { bg: 'var(--color-sage)', accent: 'var(--color-sage-deep)' },
+  coral: { bg: 'var(--color-coral)', accent: 'var(--color-rust)' },
+  cream: { bg: 'var(--color-cream-soft)', accent: 'var(--color-amber-deep)' },
+};
+const p = palettes[coverColor] ?? palettes.amber;
+---
+
+<a href={`/book/${slug}`} class="card-cozy block overflow-hidden group">
+  <div class="aspect-[4/3] flex items-center justify-center relative" style={`background: ${p.bg};`}>
+    <div class="opacity-90" set:html={coverIllustration} />
+    <div class="absolute top-3 right-3">
+      <span class="badge-age">{ageRange[0]}–{ageRange[1]}</span>
+    </div>
+  </div>
+  <div class="p-5">
+    <h3 class="text-xl mb-2 leading-tight" style="font-family: var(--font-display); font-weight: 600;">{title}</h3>
+    <p class="text-sm leading-relaxed" style="color: var(--color-ink-soft);">{summary}</p>
+    <div class="mt-4 flex flex-wrap gap-1.5">
+      {themes.slice(0, 3).map((t) => (
+        <span class="text-[0.7rem] px-2 py-0.5 rounded-full" style="font-family: var(--font-ui); background: var(--color-cream-soft); color: var(--color-ink-soft);">{t}</span>
+      ))}
+    </div>
+  </div>
+</a>

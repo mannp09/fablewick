@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { LEVELS } from '../../lib/reading-levels';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  return books.map((book) => {
+    const slug = book.id.replace(/\.json$/, '').split('/')[0];
+    return { params: { slug }, props: { book } };
+  });
+}
+
+const { book } = Astro.props;
+const data = book.data;
+---
+
+<BaseLayout title={`${data.title} · Fablewick`} description={data.summary}>
+  <article class="max-w-3xl mx-auto px-6 pt-12 pb-20">
+    <a href="/" class="text-sm inline-flex items-center gap-1 mb-8 hover:underline" style="font-family: var(--font-ui); color: var(--color-ink-soft);">
+      ← Back to library
+    </a>
+
+    <header class="mb-10">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="badge-age">Ages {data.ageRange[0]}–{data.ageRange[1]}</span>
+        {data.themes.map((t) => (
+          <span class="text-[0.7rem] px-2 py-0.5 rounded-full" style="font-family: var(--font-ui); background: var(--color-cream-soft); color: var(--color-ink-soft);">{t}</span>
+        ))}
+      </div>
+      <h1 class="text-4xl md:text-5xl leading-tight mb-4" style="font-family: var(--font-display); font-weight: 500;">{data.title}</h1>
+      <p class="text-lg" style="color: var(--color-ink-soft);">{data.summary}</p>
+      <p class="text-sm mt-3" style="font-family: var(--font-ui); color: var(--color-ink-soft);">
+        A small lesson tucked inside: <em>{data.lesson}</em>
+      </p>
+    </header>
+
+    <div class="mb-8 p-4 rounded-[var(--radius-warm)]" style="background: var(--color-paper);">
+      <p class="text-xs uppercase tracking-wider mb-3" style="font-family: var(--font-ui); color: var(--color-ink-soft);">Choose a reading level</p>
+      <div class="flex flex-wrap gap-2" role="tablist" id="level-tabs">
+        {[1, 2, 3].map((k) => (
+          <button
+            type="button"
+            class="level-btn px-4 py-2 rounded-[var(--radius-soft)] text-sm transition"
+            data-level={k}
+            style="font-family: var(--font-ui);"
+          >
+            {LEVELS[k as 1 | 2 | 3].label}
+            <span class="opacity-60 ml-1">· {LEVELS[k as 1 | 2 | 3].age}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {[1, 2, 3].map((k) => {
+      const lvl = data.levels[String(k) as '1' | '2' | '3'];
+      return (
+        <div class="story-level" data-level={k} style={k === 2 ? '' : 'display:none'}>
+          <div class="prose-story whitespace-pre-line">{lvl.text}</div>
+        </div>
+      );
+    })}
+  </article>
+</BaseLayout>
+
+<style>
+  .level-btn {
+    background: var(--color-cream-soft);
+    color: var(--color-ink-soft);
+  }
+  .level-btn[aria-selected="true"] {
+    background: var(--color-amber);
+    color: var(--color-paper);
+  }
+</style>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.level-btn');
+  const stories = document.querySelectorAll<HTMLDivElement>('.story-level');
+
+  function selectLevel(level: string) {
+    tabs.forEach((t) => t.setAttribute('aria-selected', t.dataset.level === level ? 'true' : 'false'));
+    stories.forEach((s) => {
+      s.style.display = s.dataset.level === level ? '' : 'none';
+    });
+    try { localStorage.setItem('fablewick.level', level); } catch {}
+  }
+
+  const saved = (() => { try { return localStorage.getItem('fablewick.level'); } catch { return null; } })();
+  selectLevel(saved || '2');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      if (tab.dataset.level) selectLevel(tab.dataset.level);
+    });
+  });
+</script>

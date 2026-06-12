@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuli's Whistle — Fablewick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Lora:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #FBF6EE;
+  --cream-dark: #F0E8DA;
+  --ink: #2A2118;
+  --ink-light: #5A4D3E;
+  --amber: #D4925E;
+  --amber-light: #ECC9A8;
+  --coral: #D67A6E;
+  --sage: #8FA68A;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
+  --radius-cozy: 28px;
+  --transition: 0.35s ease;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP BAR ───────────────────────────── */
+.book-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: 52px;
+}
+.book-topbar .back-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  transition: background var(--transition), color var(--transition);
+}
+.book-topbar .back-link:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.book-topbar .book-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.book-topbar .page-counter {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-light);
+}
+
+/* ── PROGRESS BAR ──────────────────────── */
+.progress-track {
+  position: fixed;
+  top: 52px; left: 0; right: 0;
+  height: 3px;
+  background: rgba(42, 33, 24, 0.06);
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--coral));
+  width: 20%;
+  transition: width 0.5s ease;
+}
+
+/* ── PAGE STAGE ──────────────────────────── */
+.stage {
+  position: fixed;
+  top: 55px; left: 0;
+  right: 0; bottom: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 5rem;
+  opacity: 0;
+  transform: translateX(40px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+.page-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Image area */
+.page-illustration {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 8px 32px rgba(42, 33, 24, 0.10);
+}
+.page-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.page-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.75;
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 400;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.page-text p { margin-bottom: 1rem; }
+.page-text p:last-child { margin-bottom: 0; }
+
+/* Wider screens: image left, text right */
+@media (min-width: 900px) {
+  .page-inner {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    height: 100%;
+  }
+  .page-illustration {
+    aspect-ratio: 16 / 9;
+  }
+  .page-text {
+    font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+    max-height: calc(100vh - 180px);
+  }
+}
+
+/* Tall screens: text first */
+@media (max-height: 600px) and (max-width: 899px) {
+  .page-illustration { aspect-ratio: 16 / 6; }
+  .page-text { font-size: 0.95rem; }
+}
+
+/* ── NAVIGATION ──────────────────────────── */
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(251, 246, 238, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(42, 33, 24, 0.08);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-btn {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.15rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nav-btn.prev {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-btn.prev:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(-2px);
+}
+.nav-btn.next {
+  background: var(--ink);
+  color: var(--cream);
+}
+.nav-btn.next:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateX(2px);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  letter-spacing: 0.14em;
+}
+.nav-center .dots {
+  display: inline-flex;
+  gap: 0.45rem;
+  vertical-align: middle;
+  margin-right: 0.65rem;
+}
+.nav-center .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(42, 33, 24, 0.18);
+  transition: background var(--transition), transform var(--transition);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.nav-center .dot.active {
+  background: var(--amber);
+  transform: scale(1.3);
+}
+
+/* ── COVER / END PAGES ──────────────────────── */
+.cover-page, .end-page {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.cover-page .page-inner, .end-page .page-inner {
+  grid-template-columns: 1fr !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.cover-kicker, .end-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1rem;
+}
+.cover-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 1.25rem;
+}
+.cover-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  color: var(--ink-light);
+  max-width: 540px;
+  line-height: 1.6;
+}
+.end-mark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: var(--amber);
+  margin-bottom: 1.5rem;
+}
+.end-line {
+  font-family: var(--font-body);
+  font-size: 1.08rem;
+  color: var(--ink-light);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+.end-back-btn {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition), transform var(--transition);
+}
+.end-back-btn:hover {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.kbd-hint {
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 600px) { .kbd-hint { display: none; } }
+
+/* ── NAV UPGRADE: brand mark, flip zones, 3D page-turn ─────────── */
+.book-topbar .back-link { display: inline-flex; align-items: center; gap: 0.5rem; }
+.book-topbar .back-link .brand-mark {
+  height: 30px; width: auto; display: block; object-fit: contain;
+}
+.book-topbar .back-link .back-label { line-height: 1; }
+@media (max-width: 560px) {
+  .book-topbar .back-link .back-label { display: none; }
+  .book-topbar .back-link .brand-mark { height: 28px; }
+}
+
+/* Click-to-flip side gutters — over the page edges, clear of topbar + nav-bar */
+.flip-zone {
+  position: fixed;
+  top: 58px;
+  bottom: 4.75rem;
+  width: 24%;
+  max-width: 190px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.flip-prev { left: 0; justify-content: flex-start; padding-left: 0.4rem; }
+.flip-next { right: 0; justify-content: flex-end; padding-right: 0.4rem; }
+.flip-zone::before {
+  font-family: var(--font-ui);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink-light);
+  width: 2.4rem; height: 2.4rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(251, 246, 238, 0.82);
+  border-radius: 100px;
+  box-shadow: 0 2px 10px rgba(42, 33, 24, 0.12);
+}
+.flip-prev::before { content: "\2039"; }
+.flip-next::before { content: "\203A"; }
+.flip-zone:hover, .flip-zone:focus-visible { opacity: 1; }
+.flip-zone:focus { outline: none; }
+.flip-zone[disabled] { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) {
+  /* touch: show a faint resting hint so kids know the edges are tappable */
+  .flip-zone:not([disabled]) { opacity: 0.5; }
+}
+
+/* 3D leaf page-turn (overrides the old slide; merges with the base .page rule) */
+.stage { perspective: 2200px; }
+.page {
+  transform-origin: center center;
+  transform: rotateY(0);
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1), opacity 0.45s ease;
+  backface-visibility: hidden;
+}
+.page.active { opacity: 1; pointer-events: auto; transform: rotateY(0) translateX(0); }
+.page.enter-fwd  { transition: none; opacity: 0; transform-origin: right center; transform: rotateY(-15deg) translateX(7%); }
+.page.enter-back { transition: none; opacity: 0; transform-origin: left center;  transform: rotateY(15deg)  translateX(-7%); }
+.page.turn-fwd   { opacity: 0; transform-origin: left center;  transform: rotateY(36deg)  translateX(-4%); }
+.page.turn-back  { opacity: 0; transform-origin: right center; transform: rotateY(-36deg) translateX(4%); }
+.page::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.55s ease;
+}
+.page.turn-fwd::after  { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0) 55%, rgba(42,33,24,0.16)); }
+.page.turn-back::after { opacity: 1; background: linear-gradient(90deg, rgba(42,33,24,0.16), rgba(42,33,24,0) 45%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page.active,
+  .page.enter-fwd, .page.enter-back,
+  .page.turn-fwd, .page.turn-back {
+    transition: opacity 0.3s ease !important;
+    transform: none !important;
+  }
+  .page::after { display: none !important; }
+}
+
+/* ── COVER REDESIGN: centered wordmark + cover art ─────────────── */
+.book-topbar .topbar-wordmark {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 26px; width: auto; display: block;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .book-topbar .topbar-wordmark { height: 22px; }
+}
+.cover-page .page-inner {
+  justify-content: flex-start;
+  padding-top: 3vh;
+  gap: 1.5rem;
+}
+.cover-art {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  background: var(--cream-dark);
+  box-shadow: 0 10px 36px rgba(42, 33, 24, 0.14);
+}
+.cover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 600px) {
+  .cover-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .cover-art { max-width: 100%; }
+  .cover-page .page-inner { padding-top: 2vh; }
+}
+
+/* ── DUSK THEME (reader) — night sky + light text/chrome ─────── */
+body { background: linear-gradient(180deg, #1C2A52 0%, #46396A 52%, #B97E7A 100%) !important; background-attachment: fixed !important; }
+#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#starfield .twk { position: absolute; opacity: 0.16; will-change: opacity, transform; }
+@keyframes fwTw { 0%,40%,100% { opacity: 0.14; transform: scale(0.6); } 47% { opacity: 1; transform: scale(1); } 54% { opacity: 0.14; transform: scale(0.6); } }
+@media (prefers-reduced-motion: reduce) { #starfield .twk { animation: none !important; opacity: 0.5 !important; } }
+
+.stage { z-index: 1; }
+.book-topbar { background: rgba(24, 34, 66, 0.74) !important; border-bottom-color: rgba(255,255,255,0.12) !important; }
+.book-topbar .back-link .back-label { color: #E7DFF3 !important; }
+.page-counter { color: #CFC6DD !important; }
+.progress-track { background: rgba(255,255,255,0.10) !important; }
+
+.page-text, .page-text p { color: #EFE7DD !important; }
+.cover-title { color: #FBF4EC !important; }
+.cover-tagline { color: #E6DAE4 !important; }
+.cover-kicker { color: #E9BD93 !important; }
+.end-mark { color: #E9BD93 !important; }
+.end-line { color: #E6DAE4 !important; }
+
+.nav-bar { background: rgba(24, 34, 66, 0.78) !important; border-top-color: rgba(255,255,255,0.12) !important; }
+.nav-btn.prev { background: rgba(255,255,255,0.12) !important; color: #EADFF0 !important; }
+.nav-btn.next { background: #F3ECE2 !important; color: #2A2342 !important; }
+.nav-center { color: #CFC6DD !important; }
+.nav-center .dot { background: rgba(255,255,255,0.28) !important; }
+.nav-center .dot.active { background: #E9BD93 !important; }
+</style>
+</head>
+<body>
+<div id="starfield" aria-hidden="true"></div>
+
+<div class="book-topbar">
+  <a href="fablewick-landing.html" class="back-link" aria-label="Fablewick home"><img class="brand-mark" src="../src/assets/fablewick-mark.png" alt="Fablewick"><span class="back-label">Library</span></a>
+  
+  <div class="page-counter" id="pageCounter">1 / 7</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="stage" id="stage" role="main">
+  <button class="flip-zone flip-prev" id="flipPrev" type="button" aria-label="Previous page" tabindex="-1"></button>
+  <button class="flip-zone flip-next" id="flipNext" type="button" aria-label="Next page" tabindex="-1"></button>
+
+  <!-- PAGE 1: COVER -->
+  <section class="page cover-page active" data-page="1">
+    <div class="page-inner">
+      <h1 class="cover-title">Tuli's Whistle</h1>
+      <div class="cover-art"><img src="../src/assets/pages/tulis-whistle/cover.jpg" alt=""></div>
+      <p class="cover-tagline">A story for ages 5–9 about keeping going when the middle gets hard</p>
+    </div>
+  </section>
+
+  <!-- PAGE 2: Decision + why Tuli wants a whistle -->
+  <section class="page" data-page="2">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/tulis-whistle/page-01.jpg" alt="Tuli the young fox sitting on a sunny patch of moss, watching a distant shepherd whistle across the field" onerror="this.onerror=null;this.src='../src/assets/pages/tulis-whistle/page-01.jpg'">
+      </div>
+      <div class="page-text">
+        <p>One morning, Tuli the young fox heard a shepherd whistle.</p>
+        <p>One clean, bright note sailed across the whole field, and a dog came running from far, far away.</p>
+        <p>The sound landed in Tuli's chest and stayed there. A whistle could call your friends. A whistle was a song that fit inside your mouth.</p>
+        <p>"I want one," said Tuli. "I want one very much."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 3: First attempts + the squirrel appears -->
+  <section class="page" data-page="3">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/tulis-whistle/page-02.jpg" alt="Tuli blowing hard with a careful little O mouth while a squirrel watches from a branch, eating an acorn" onerror="this.onerror=null;this.src='../src/assets/pages/tulis-whistle/page-02.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Tuli found a sunny patch of moss. He made a careful little O with his mouth, just like the shepherd. He took a breath. He blew.</p>
+        <p>"PFFFFFF."</p>
+        <p>No whistle.</p>
+        <p>He tried again. "PFFFFFFFFFF."</p>
+        <p>No whistle.</p>
+        <p>A squirrel watched from a low branch, nibbling an acorn very, very slowly, the way you do when you have found a good show.</p>
+        <p>"You are not whistling," said the squirrel.</p>
+        <p>"I know," said Tuli. And he blew again.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4: The long morning + "cannot yet" wisdom -->
+  <section class="page" data-page="4">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/tulis-whistle/page-03.jpg" alt="Tuli slumped on the moss, tired and discouraged, as the squirrel leans down kindly from its branch" onerror="this.onerror=null;this.src='../src/assets/pages/tulis-whistle/page-03.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Tuli tried all morning. Pff. Pfff. Pffffff. By afternoon his mouth was so tired he flopped onto the moss with a thump.</p>
+        <p>"Maybe I just cannot whistle," he said.</p>
+        <p>"Maybe," said the squirrel kindly. "Or maybe you can. Just not yet. Most things start as cannot-yet. The middle part is the hard part: boring, and tiring, and it doesn't feel like it's working. But it is. That's where most foxes give up."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5: Trying again + the first tiny whistle -->
+  <section class="page" data-page="5">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/tulis-whistle/page-04.jpg" alt="Tuli mid-breath as his first tiny whistle finally comes out, eyes wide with surprise" onerror="this.onerror=null;this.src='../src/assets/pages/tulis-whistle/page-04.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Tuli sat up. He took a careful breath. He made the careful O.</p>
+        <p>"Pff." Nothing.</p>
+        <p>He did not stop. He tried again.</p>
+        <p>And then —</p>
+        <p>"PFEEEE."</p>
+        <p>A whistle! A tiny, thin, wobbly whistle. But a whistle, sure as sunlight.</p>
+        <p>Tuli froze. The squirrel froze, acorn halfway to its mouth.</p>
+        <p>"DID YOU HEAR THAT?" shouted Tuli.</p>
+        <p>"I heard it!" said the squirrel.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 6: Celebration + closing -->
+  <section class="page" data-page="6">
+    <div class="page-inner">
+      <div class="page-illustration">
+        <img src="../src/assets/pages/tulis-whistle/page-05.jpg" alt="Tuli leaping with joy while the squirrel hops in place on the branch, celebrating the first whistle" onerror="this.onerror=null;this.src='../src/assets/pages/tulis-whistle/page-05.jpg'">
+      </div>
+      <div class="page-text">
+        <p>Tuli leapt off the moss, all four paws in the air. The squirrel hopped straight up on its branch, acorn flying.</p>
+        <p>The whistle had been small. It had been short. But it was Tuli's. And now he knew that he could.</p>
+        <p>"I am going to do that again," he said.</p>
+        <p>And he did. Every day. And by the end of the week, when the shepherd whistled across the field, a small, proud whistle answered from the woods.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 7: END -->
+  <section class="page end-page" data-page="7">
+    <div class="page-inner">
+      <div class="end-mark">— The End —</div>
+      <p class="end-line">The hard part is in the middle. Keep going anyway.</p>
+      <a href="fablewick-landing.html" class="end-back-btn">← Back to the library</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar" role="navigation" aria-label="Story pages">
+  <button class="nav-btn prev" id="prevBtn" disabled aria-label="Previous page">← Back</button>
+  <div class="nav-center">
+    <span class="dots" id="dots"></span>
+    <span id="pageLabel" aria-live="polite">Page 1 of 7</span>
+  </div>
+  <button class="nav-btn next" id="nextBtn" aria-label="Next page">Next →</button>
+</div>
+
+<script>
+// ─── i18n data (inlined to avoid file:// fetch issues) ────────
+const I18N = {"pageTexts": {"en": ["One morning, Tuli the young fox heard a shepherd whistle.\n\nOne clean, bright note sailed across the whole field, and a dog came running from far, far away.\n\nThe sound landed in Tuli's chest and stayed there. A whistle could call your friends. A whistle was a song that fit inside your mouth.\n\n\"I want one,\" said Tuli. \"I want one very much.\"", "Tuli found a sunny patch of moss. He made a careful little O with his mouth, just like the shepherd. He took a breath. He blew.\n\n\"PFFFFFF.\"\n\nNo whistle.\n\nHe tried again. \"PFFFFFFFFFF.\"\n\nNo whistle.\n\nA squirrel watched from a low branch, nibbling an acorn very, very slowly, the way you do when you have found a good show.\n\n\"You are not whistling,\" said the squirrel.\n\n\"I know,\" said Tuli. And he blew again.", "Tuli tried all morning. Pff. Pfff. Pffffff. By afternoon his mouth was so tired he flopped onto the moss with a thump.\n\n\"Maybe I just cannot whistle,\" he said.\n\n\"Maybe,\" said the squirrel kindly. \"Or maybe you can. Just not yet. Most things start as cannot-yet. The middle part is the hard part: boring, and tiring, and it doesn't feel like it's working. But it is. That's where most foxes give up.\"", "Tuli sat up. He took a careful breath. He made the careful O.\n\n\"Pff.\" Nothing.\n\nHe did not stop. He tried again.\n\nAnd then —\n\n\"PFEEEE.\"\n\nA whistle! A tiny, thin, wobbly whistle. But a whistle, sure as sunlight.\n\nTuli froze. The squirrel froze, acorn halfway to its mouth.\n\n\"DID YOU HEAR THAT?\" shouted Tuli.\n\n\"I heard it!\" said the squirrel.", "Tuli leapt off the moss, all four paws in the air. The squirrel hopped straight up on its branch, acorn flying.\n\nThe whistle had been small. It had been short. But it was Tuli's. And now he knew that he could.\n\n\"I am going to do that again,\" he said.\n\nAnd he did. Every day. And by the end of the week, when the shepherd whistled across the field, a small, proud whistle answered from the woods."], "hi": ["तुली नौजवान लोमड़ी ने अपना मन बना लिया था. आज, वो सीटी बजाना सीखेगा.\n\nतुली ने एक चरवाहे को एक सुबह सीटी बजाते सुना था, और वो आवाज़ इतनी साफ़ और चमकीली और काम की थी कि तुली तब से उसके बारे में सोच रहा था. एक सीटी से तुम अपने दोस्तों को बुला सकते हो. एक सीटी का मतलब नमस्ते हो सकता है. एक सीटी एक गाना हो सकती है जो तुम्हारे मुँह में फ़िट हो जाए. तुली को वो बहुत चाहिए था.", "तुली धूप वाली काई के एक टुकड़े पर बैठ गया. तुली ने अपने मुँह से एक सावधान छोटा O बनाया, जैसे उसने चरवाहे को करते देखा था. तुली ने साँस ली. तुली ने फूँक मारी.\n\n\"PFFFFFF,\" तुली ने किया.\n\nकोई सीटी नहीं.\n\nतुली ने मुँह बनाया. तुली ने फिर कोशिश की.\n\n\"PFFFFFFFFFFFF.\"\n\nकोई सीटी नहीं.\n\nएक गिलहरी एक डाली से देख रही थी. गिलहरी एक बलूत बहुत धीरे धीरे खा रही थी, जैसे गिलहरियाँ करती हैं जब वो एक तमाशा देखने के लिए जम जाती हैं.\n\n\"तुम सीटी नहीं बजा रहे,\" गिलहरी ने मदद से कहा.\n\n\"मुझे पता है,\" तुली ने कहा.", "तुली ने पूरी सुबह कोशिश की. Pff. Pfff. Pffffff. कभी कभी एक छोटी सी फुसफुसाहट आती. कभी कभी कुछ नहीं आता. एक बार तुली के होंठों ने एक तरह की भिनभिनाहट की, जो सीटी नहीं थी, लेकिन कम से कम, एक नई आवाज़ थी.\n\nदोपहर तक, तुली का मुँह थका हुआ लगा. दोपहर बाद, तुली का मुँह बहुत थका हुआ लगा.\n\nतुली धम से बैठ गया. तुली हताश था.\n\n\"शायद,\" तुली ने धीरे से कहा, \"मैं बस सीटी नहीं बजा सकता.\"\n\nगिलहरी बलूत के बीच में रुकी.\n\n\"शायद,\" गिलहरी ने कहा. \"या शायद तुम बजा सकते हो. बस अभी नहीं. 'नहीं बजा सकता' और 'अभी नहीं बजा सकता' में फ़र्क है. ज़्यादातर चीज़ें 'अभी नहीं बजा सकता' से शुरू होती हैं. फिर, अगर तुम चलते रहो, वो 'बजा सकता हूँ' बन जाती हैं. बीच का उबाऊ हिस्सा वो है जहाँ ज़्यादातर लोमड़ियाँ हार मान लेती हैं.\"", "तुली ने इसके बारे में सोचा. तुली ने इसके बारे में एक लंबे पल तक सोचा. बीच का उबाऊ हिस्सा. तुली पक्का बीच के उबाऊ हिस्से में था.\n\nतुली ने फिर कोशिश की. उसने एक सावधान साँस ली. उसने एक सावधान O बनाया.\n\n\"Pff.\"\n\nकुछ नहीं.\n\nतुली ने हार नहीं मानी.\n\nउसने फिर कोशिश की.\n\nऔर फिर —\n\n\"PFEEEE.\"\n\nएक सीटी. एक छोटी. एक छोटी, पतली, थोड़ी डगमगाती सीटी. लेकिन, साफ़ साफ़, एक सीटी.", "तुली जम गया. तुली ने सुना था. गिलहरी ने सुना था.\n\n\"तुमने सुना?\" तुली ने कहा, इतने जोश से कि सीटी फिर से चली गई.\n\n\"मैंने सुना!\" गिलहरी ने कहा, अपनी जगह पर कूदते हुए.\n\nसीटी छोटी थी. सीटी ज़्यादा देर नहीं चली थी. सीटी एक गाने से ज़्यादा एक चूँ चूँ थी.\n\nलेकिन तुली ने सीटी बजाई थी.\n\nऔर तुली को अब पता था, सच में, सच्ची तरह से, जैसा तुम तभी जानते हो जब तुमने एक बार कुछ कर लिया हो, कि वो कर सकता है.\n\n\"मैं ये फिर करूँगा,\" तुली ने बहुत गंभीरता से कहा.\n\nऔर उसने किया. हर दिन. यह बेहतर होती गई."], "gu": ["તુલી જુવાન શિયાળે પોતાનું મન બનાવી લીધું હતું. આજે, એ સીટી વગાડવાનું શીખશે.\n\nતુલી એ એક ઘેટાંપાળકને એક સવારે સીટી વગાડતો સાંભળ્યો હતો, અને એ અવાજ એટલો સ્પષ્ટ અને તેજસ્વી અને કામનો હતો કે તુલી ત્યારથી એના વિશે વિચારી રહ્યો હતો. એક સીટીથી તું તારા મિત્રોને બોલાવી શકે. એક સીટીનો અર્થ નમસ્તે હોઈ શકે. એક સીટી એક ગીત હોઈ શકે જે તારા મોંમાં ફિટ થઈ જાય. તુલી ને એ બહુ જોઈતી હતી.", "તુલી તડકાવાળી શેવાળના એક ટુકડા પર બેસી ગયો. તુલી એ પોતાના મોંથી એક સાવધાન નાનો O બનાવ્યો, જેમ એણે ઘેટાંપાળકને કરતો જોયો હતો. તુલી એ શ્વાસ લીધો. તુલી એ ફૂંક મારી.\n\n\"PFFFFFF,\" તુલી એ કર્યું.\n\nકોઈ સીટી નહીં.\n\nતુલી એ મોં બગાડ્યું. તુલી એ ફરી પ્રયત્ન કર્યો.\n\n\"PFFFFFFFFFFFF.\"\n\nકોઈ સીટી નહીં.\n\nએક ખિસકોલી એક ડાળી પરથી જોઈ રહી હતી. ખિસકોલી એક અકોર્ન બહુ ધીમે ધીમે ખાતી હતી, જેમ ખિસકોલીઓ કરે છે જ્યારે તેઓ એક તમાશો જોવા માટે જામી જાય છે.\n\n\"તું સીટી નથી વગાડતો,\" ખિસકોલીએ મદદથી કહ્યું.\n\n\"મને ખબર છે,\" તુલી એ કહ્યું.", "તુલી એ આખી સવાર પ્રયત્ન કર્યો. Pff. Pfff. Pffffff. ક્યારેક એક નાનકડી ફુસફુસાહટ આવતી. ક્યારેક કંઈ નહીં આવતું. એક વાર તુલી ના હોઠોએ એક પ્રકારની ભનભનાહટ કરી, જે સીટી નહોતી, પણ ઓછામાં ઓછું, એક નવો અવાજ હતો.\n\nબપોર સુધી, તુલી નું મોં થાકેલું લાગ્યું. બપોર પછી, તુલી નું મોં બહુ થાકેલું લાગ્યું.\n\nતુલી ધડ સાથે બેસી ગયો. તુલી નિરાશ હતો.\n\n\"કદાચ,\" તુલી એ ધીરેથી કહ્યું, \"હું ફક્ત સીટી નથી વગાડી શકતો.\"\n\nખિસકોલી અકોર્નની વચ્ચે અટકી.\n\n\"કદાચ,\" ખિસકોલીએ કહ્યું. \"અથવા કદાચ તું વગાડી શકે. ફક્ત હજી નહીં. 'નથી વગાડી શકતો' અને 'હજી નથી વગાડી શકતો' માં ફરક છે. મોટાભાગની વસ્તુઓ 'હજી નથી વગાડી શકતો' થી શરૂ થાય છે. પછી, જો તું ચાલતો રહે, એ 'વગાડી શકું છું' બની જાય છે. વચ્ચેનો કંટાળાજનક ભાગ એ છે જ્યાં મોટાભાગના શિયાળ હાર માની લે છે.\"", "તુલી એ એના વિશે વિચાર્યું. તુલી એ એના વિશે એક લાંબી ક્ષણ સુધી વિચાર્યું. વચ્ચેનો કંટાળાજનક ભાગ. તુલી ચોક્કસ વચ્ચેના કંટાળાજનક ભાગમાં હતો.\n\nતુલી એ ફરી પ્રયત્ન કર્યો. એણે એક સાવધાન શ્વાસ લીધો. એણે એક સાવધાન O બનાવ્યો.\n\n\"Pff.\"\n\nકંઈ નહીં.\n\nતુલી એ હાર ન માની.\n\nએણે ફરી પ્રયત્ન કર્યો.\n\nઅને પછી —\n\n\"PFEEEE.\"\n\nએક સીટી. એક નાનકડી. એક નાની, પાતળી, થોડી ડગમગતી સીટી. પણ, સ્પષ્ટ રીતે, એક સીટી.", "તુલી અટકી ગયો. તુલી એ સાંભળ્યું હતું. ખિસકોલીએ સાંભળ્યું હતું.\n\n\"તેં સાંભળ્યું?\" તુલી એ કહ્યું, એટલા ઉત્સાહથી કે સીટી તરત જ ફરીથી ચાલી ગઈ.\n\n\"મેં સાંભળ્યું!\" ખિસકોલીએ પોતાની જગ્યાએ કૂદતાં કહ્યું.\n\nસીટી નાની હતી. સીટી વધારે વાર નહોતી ચાલી. સીટી એક ગીત કરતાં વધારે એક ચૂ ચૂ હતી.\n\nપણ તુલી એ સીટી વગાડી હતી.\n\nઅને તુલી ને હવે ખબર હતી, સાચે, સાચી રીતે, જેવી રીતે તું ત્યારે જ જાણે છે જ્યારે તેં એક વાર કંઈક કર્યું હોય, કે એ કરી શકે છે.\n\n\"હું આ ફરી કરીશ,\" તુલી એ બહુ ગંભીરતાથી કહ્યું.\n\nઅને એણે કર્યું. દરરોજ. એ સારી થતી ગઈ."], "es": ["Tuli el joven zorro lo había decidido. Hoy, aprendería a silbar.\n\nTuli había oído a un pastor silbar una mañana, y el sonido había sido tan limpio y brillante y útil que Tuli había estado pensando en ello desde entonces. Un silbido podía llamar a tus amigos. Un silbido podía significar hola. Un silbido podía ser una canción que cabía en tu boca. Tuli quería eso mucho.", "Tuli se sentó en un parche soleado de musgo. Tuli hizo una pequeña O cuidadosa con la boca, como había visto hacer al pastor. Tuli tomó aire. Tuli sopló.\n\n\"PFFFFFF,\" hizo Tuli.\n\nNingún silbido.\n\nTuli frunció el ceño. Tuli lo intentó de nuevo.\n\n\"PFFFFFFFFFFFF.\"\n\nNingún silbido.\n\nUna ardilla miraba desde una rama. La ardilla comía una bellota muy despacio, como hacen las ardillas cuando se acomodan para disfrutar de un espectáculo.\n\n\"No estás silbando,\" dijo la ardilla servicialmente.\n\n\"Soy consciente,\" dijo Tuli.", "Tuli lo intentó toda la mañana. Pff. Pfff. Pffffff. A veces salía un pequeño sonido sibilante. A veces no salía nada en absoluto. Una vez los labios de Tuli hicieron una especie de aleteo zumbante, que no era un silbido, pero era, al menos, un sonido nuevo.\n\nPara el almuerzo, la boca de Tuli se sentía cansada. Para la tarde, la boca de Tuli se sentía extremadamente cansada.\n\nTuli se sentó con un golpe. Tuli estaba desanimado.\n\n\"Quizás,\" dijo Tuli despacio, \"simplemente no puedo silbar.\"\n\nLa ardilla hizo una pausa a mitad de bellota.\n\n\"Quizás,\" dijo la ardilla. \"O quizás puedes. Solo que todavía no. Hay una diferencia entre 'no puedo' y 'no puedo todavía'. La mayoría de las cosas empiezan como no puedo todavía. Luego, si sigues, se convierten en puedo. La parte aburrida del medio es donde la mayoría de los zorros se rinden.\"", "Tuli pensó en esto. Tuli lo pensó durante un largo minuto. La parte aburrida del medio. Tuli estaba definitivamente en la parte aburrida del medio.\n\nTuli lo intentó de nuevo. Tomó un respiro cuidadoso. Hizo una O cuidadosa.\n\n\"Pff.\"\n\nNada.\n\nTuli no se rindió.\n\nLo intentó de nuevo.\n\nY luego —\n\n\"PFEEEE.\"\n\nUn silbido. Uno pequeño. Un silbido pequeño, fino, ligeramente tembloroso. Pero, inequívocamente, un silbido.", "Tuli se quedó quieto. Tuli lo había oído. La ardilla lo había oído.\n\n\"¿LO OÍSTE?\" dijo Tuli, con tanto entusiasmo que el silbido inmediatamente se fue de nuevo.\n\n\"¡Lo oí!\" dijo la ardilla, saltando en su lugar.\n\nEl silbido había sido pequeño. El silbido no había durado mucho. El silbido había sido más un chillido que una melodía.\n\nPero Tuli había silbado.\n\nY Tuli sabía ahora, realmente, verdaderamente sabía, de la manera en que solo sabes después de haber hecho algo una vez, que podía.\n\n\"Voy a hacer eso de nuevo,\" dijo Tuli, muy seriamente.\n\nY lo hizo. Todos los días. Fue mejorando."], "fr": ["Tuli le jeune renard avait décidé. Aujourd'hui, il apprendrait à siffler.\n\nTuli avait entendu un berger siffler un matin, et le son avait été si propre et brillant et utile que Tuli y pensait depuis. Un sifflement pouvait appeler tes amis. Un sifflement pouvait signifier bonjour. Un sifflement pouvait être une chanson qui rentrait dans ta bouche. Tuli voulait ça très fort.", "Tuli s'est assis dans une parcelle ensoleillée de mousse. Tuli a fait un petit O soigneux avec sa bouche, comme il avait vu le berger faire. Tuli a pris une respiration. Tuli a soufflé.\n\n\"PFFFFFF,\" a fait Tuli.\n\nAucun sifflement.\n\nTuli a froncé les sourcils. Tuli a réessayé.\n\n\"PFFFFFFFFFFFF.\"\n\nAucun sifflement.\n\nUn écureuil regardait depuis une branche. L'écureuil mangeait un gland très lentement, comme font les écureuils quand ils s'installent pour profiter d'un spectacle.\n\n\"Tu ne siffles pas,\" a dit l'écureuil utilement.\n\n\"Je suis au courant,\" a dit Tuli.", "Tuli a essayé toute la matinée. Pff. Pfff. Pffffff. Parfois un petit son sifflant sortait. Parfois rien ne sortait du tout. Une fois, les lèvres de Tuli ont fait une sorte de bourdonnement vibrant, qui n'était pas un sifflement, mais était, au moins, un nouveau son.\n\nÀ midi, la bouche de Tuli était fatiguée. Dans l'après-midi, la bouche de Tuli était extrêmement fatiguée.\n\nTuli s'est assis avec un bruit sourd. Tuli était découragé.\n\n\"Peut-être,\" a dit Tuli lentement, \"je ne peux simplement pas siffler.\"\n\nL'écureuil s'est arrêté au milieu du gland.\n\n\"Peut-être,\" a dit l'écureuil. \"Ou peut-être que tu peux. Juste pas encore. Il y a une différence entre 'je ne peux pas' et 'je ne peux pas encore'. La plupart des choses commencent par je ne peux pas encore. Puis, si tu continues, elles deviennent je peux. La partie ennuyeuse du milieu est là où la plupart des renards abandonnent.\"", "Tuli a pensé à ça. Tuli y a pensé pendant une longue minute. La partie ennuyeuse du milieu. Tuli était définitivement dans la partie ennuyeuse du milieu.\n\nTuli a réessayé. Il a pris une respiration soigneuse. Il a fait un O soigneux.\n\n\"Pff.\"\n\nRien.\n\nTuli n'a pas abandonné.\n\nIl a réessayé.\n\nEt puis —\n\n\"PFEEEE.\"\n\nUn sifflement. Un petit. Un sifflement petit, fin, légèrement tremblant. Mais, sans aucun doute, un sifflement.", "Tuli s'est figé. Tuli l'avait entendu. L'écureuil l'avait entendu.\n\n\"TU AS ENTENDU?\" a dit Tuli, avec tellement d'enthousiasme que le sifflement est immédiatement reparti.\n\n\"J'ai entendu!\" a dit l'écureuil, sautillant sur place.\n\nLe sifflement avait été petit. Le sifflement n'avait pas duré longtemps. Le sifflement avait été plus un couinement qu'une mélodie.\n\nMais Tuli avait sifflé.\n\nEt Tuli savait maintenant, vraiment, vraiment savait, de la manière dont tu ne sais que quand tu as fait quelque chose une fois, qu'il pouvait.\n\n\"Je vais refaire ça,\" a dit Tuli, très sérieusement.\n\nEt il l'a fait. Tous les jours. C'est devenu mieux."]}, "covers": {"en": "A story for ages 5–9 about keeping going when the middle gets hard", "hi": "उम्र 5–9 के लिए एक कहानी, इस बारे में कि जब बीच का हिस्सा मुश्किल हो जाए तो भी चलते रहना", "gu": "ઉંમર 5–9 માટેની વાર્તા, એ વિશે કે જ્યારે વચ્ચેનો ભાગ અઘરો બને ત્યારે પણ ચાલતા રહેવું", "es": "Una historia para edades 5–9 sobre seguir adelante cuando el medio se pone difícil", "fr": "Une histoire pour les 5–9 ans sur continuer quand le milieu devient difficile"}, "ends": {"en": "The hard part is in the middle. Keep going anyway.", "hi": "मुश्किल हिस्सा बीच में होता है। फिर भी चलते रहो।", "gu": "અઘરો ભાગ વચ્ચે હોય છે. તોપણ ચાલતા રહો.", "es": "La parte difícil está en el medio. Sigue adelante de todos modos.", "fr": "La partie difficile est au milieu. Continue quand même."}, "back_labels": {"en": "← Library", "hi": "← पुस्तकालय", "gu": "← પુસ્તકાલય", "es": "← Biblioteca", "fr": "← Bibliothèque"}, "end_btn": {"en": "← Back to the library", "hi": "← पुस्तकालय पर वापस", "gu": "← પુસ્તકાલય પર પાછા", "es": "← Volver a la biblioteca", "fr": "← Retour à la bibliothèque"}, "titles": {"en": "Tuli's Whistle", "hi": "तुली की सीटी", "gu": "તુલીની સીટી", "es": "El Silbido de Tuli", "fr": "Le Sifflement de Tuli"}, "kickers": {"en": "Fablewick", "hi": "फेबलविक", "gu": "ફેબલવિક", "es": "Fablewick", "fr": "Fablewick"}, "end_marks": {"en": "— The End —", "hi": "— समाप्त —", "gu": "— સમાપ્ત —", "es": "— Fin —", "fr": "— Fin —"}, "nav_prev": {"en": "← Back", "hi": "← पीछे", "gu": "← પાછળ", "es": "← Atrás", "fr": "← Retour"}, "nav_next": {"en": "Next →", "hi": "आगे →", "gu": "આગળ →", "es": "Siguiente →", "fr": "Suivant →"}, "page_label": {"en": "Page {n} of {t}", "hi": "पृष्ठ {n} / {t}", "gu": "પૃષ્ઠ {n} / {t}", "es": "Página {n} de {t}", "fr": "Page {n} sur {t}"}};
+
+// Read persisted language from the landing page's localStorage
+const LANG_KEY = 'fablewick.lang';
+const SUPPORTED_LANGS = ['en', 'hi', 'gu', 'es', 'fr'];
+let currentLang = (() => {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return SUPPORTED_LANGS.includes(saved) ? saved : 'en';
+  } catch (e) { return 'en'; }
+})();
+
+// Apply translations on page load
+document.addEventListener('DOMContentLoaded', () => {
+  applyLanguage(currentLang);
+});
+
+function applyLanguage(lang) {
+  if (!SUPPORTED_LANGS.includes(lang)) lang = 'en';
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Cover tagline + end line + back labels
+  const coverTagline = document.querySelector('.cover-tagline');
+  if (coverTagline) coverTagline.textContent = I18N.covers[lang] || I18N.covers.en;
+
+  const endLine = document.querySelector('.end-line');
+  if (endLine) endLine.textContent = I18N.ends[lang] || I18N.ends.en;
+
+  const backLabel = document.querySelector('.book-topbar .back-link .back-label');
+  if (backLabel) backLabel.textContent = (I18N.back_labels[lang] || I18N.back_labels.en).replace(/^[←\s]+/, '');
+
+  const endBtn = document.querySelector('.end-back-btn');
+  if (endBtn) endBtn.textContent = I18N.end_btn[lang] || I18N.end_btn.en;
+
+  // Cover title + kicker, end mark, topbar book name, document title — native script
+  const coverTitle = document.querySelector('.cover-title');
+  if (coverTitle && I18N.titles) coverTitle.textContent = I18N.titles[lang] || I18N.titles.en;
+
+  const coverKicker = document.querySelector('.cover-kicker');
+  if (coverKicker && I18N.kickers) coverKicker.textContent = I18N.kickers[lang] || I18N.kickers.en;
+
+  const endMark = document.querySelector('.end-mark');
+  if (endMark && I18N.end_marks) endMark.textContent = I18N.end_marks[lang] || I18N.end_marks.en;
+
+  // topbar shows the Fablewick wordmark (image) — always English, never translated
+  if (I18N.titles) document.title = (I18N.titles[lang] || I18N.titles.en) + ' — Fablewick';
+
+  const prevB = document.getElementById('prevBtn');
+  if (prevB && I18N.nav_prev) prevB.textContent = I18N.nav_prev[lang] || I18N.nav_prev.en;
+  const nextB = document.getElementById('nextBtn');
+  if (nextB && I18N.nav_next) nextB.textContent = I18N.nav_next[lang] || I18N.nav_next.en;
+
+  if (typeof updateUI === 'function') updateUI();
+
+  // Page-by-page story text — pages with class .image-page or just .page (not cover/end)
+  // Use a fixed 5-page mapping: the 5 content pages between cover and end
+  const contentPages = Array.from(document.querySelectorAll('.page'))
+    .filter(p => !p.classList.contains('cover-page') && !p.classList.contains('end-page'));
+  const pageTextsForLang = I18N.pageTexts[lang] || I18N.pageTexts.en;
+  contentPages.forEach((pageEl, idx) => {
+    const textEl = pageEl.querySelector('.page-text');
+    if (!textEl || !pageTextsForLang[idx]) return;
+    // Split into <p> paragraphs by double newline
+    const html = pageTextsForLang[idx]
+      .split(/\n\s*\n/)
+      .map(p => '<p>' + escapeForHtml(p.trim()) + '</p>')
+      .join('');
+    textEl.innerHTML = html;
+  });
+}
+
+function escapeForHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+const pages = Array.from(document.querySelectorAll('.page'));
+const total = pages.length;
+let currentIdx = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipPrev = document.getElementById('flipPrev');
+const flipNext = document.getElementById('flipNext');
+const pageCounter = document.getElementById('pageCounter');
+const pageLabel = document.getElementById('pageLabel');
+const progressFill = document.getElementById('progressFill');
+const dotsEl = document.getElementById('dots');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.dataset.idx = i;
+  d.setAttribute('aria-label', 'Go to page ' + (i + 1));
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+function goTo(newIdx) {
+  if (newIdx < 0 || newIdx >= total || newIdx === currentIdx) return;
+  const dir = newIdx > currentIdx ? 1 : -1;
+  const oldPage = pages[currentIdx];
+  const newPage = pages[newIdx];
+
+  // incoming page: preset on the side it enters from (no transition for the preset)
+  newPage.classList.remove('active', 'turn-fwd', 'turn-back', 'enter-fwd', 'enter-back');
+  newPage.classList.add(dir > 0 ? 'enter-fwd' : 'enter-back');
+  void newPage.offsetWidth;            // commit the preset before animating
+
+  // outgoing page turns away like a leaf
+  oldPage.classList.remove('active');
+  oldPage.classList.add(dir > 0 ? 'turn-fwd' : 'turn-back');
+
+  // incoming page settles flat
+  newPage.classList.remove('enter-fwd', 'enter-back');
+  newPage.classList.add('active');
+
+  setTimeout(() => {
+    oldPage.classList.remove('turn-fwd', 'turn-back', 'exit-left');
+    const txt = newPage.querySelector('.page-text');
+    if (txt) txt.scrollTop = 0;
+  }, 600);
+
+  currentIdx = newIdx;
+  updateUI();
+}
+
+function updateUI() {
+  const n = currentIdx + 1;
+  pageCounter.textContent = `${n} / ${total}`;
+  const labelTmpl = (I18N.page_label && (I18N.page_label[currentLang] || I18N.page_label.en)) || 'Page {n} of {t}';
+  pageLabel.textContent = labelTmpl.replace('{n}', n).replace('{t}', total);
+  progressFill.style.width = (n / total * 100) + '%';
+  prevBtn.disabled = currentIdx === 0;
+  nextBtn.disabled = currentIdx === total - 1;
+  if (flipPrev) flipPrev.disabled = currentIdx === 0;
+  if (flipNext) flipNext.disabled = currentIdx === total - 1;
+  var _wm = document.querySelector('.topbar-wordmark');
+  if (_wm) _wm.style.display = currentIdx === 0 ? '' : 'none';
+  Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+prevBtn.addEventListener('click', () => goTo(currentIdx - 1));
+nextBtn.addEventListener('click', () => goTo(currentIdx + 1));
+if (flipPrev) flipPrev.addEventListener('click', () => goTo(currentIdx - 1));
+if (flipNext) flipNext.addEventListener('click', () => goTo(currentIdx + 1));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { goTo(currentIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { goTo(currentIdx - 1); e.preventDefault(); }
+  if (e.key === 'Escape') { window.location.href = 'fablewick-landing.html'; }
+});
+
+updateUI();
+
+// ─── DUSK THEME starfield (reader) ────────────────────────────
+(function () {
+  var sky = document.getElementById('starfield');
+  if (!sky) return;
+  var spark = '<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true"><path d="M12 0 L13.5 10.5 L24 12 L13.5 13.5 L12 24 L10.5 13.5 L0 12 L10.5 10.5 Z" fill="#FFF6E0"/></svg>';
+  var n = Math.max(30, Math.min(80, Math.round(window.innerWidth * window.innerHeight / 16000)));
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement('div');
+    s.className = 'twk';
+    var size = (3 + Math.random() * 6).toFixed(1);
+    s.style.left = (Math.random() * 99).toFixed(1) + '%';
+    s.style.top = (Math.random() * 92).toFixed(1) + '%';
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.animation = 'fwTw ' + (2.4 + Math.random() * 3.2).toFixed(2) + 's ease-in-out ' + (Math.random() * 6).toFixed(2) + 's infinite';
+    s.innerHTML = spark;
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
