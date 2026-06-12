@@ -234,9 +234,11 @@ body {
   transition: opacity var(--transition), transform var(--transition);
   pointer-events: none;
 }
-.book-card:hover .card-hero::after {
-  opacity: 1;
-  transform: translateY(0);
+@media (hover: hover) {
+  .book-card:hover .card-hero::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-hero img {
@@ -880,7 +882,7 @@ const i18n = {
 const books = [
   {
     slug: "hands-in-the-soil",
-    age: "5-8",
+    age: "5-9",
     color: "amber",
     themes: { en: ["family","patience","intergenerational","love"], hi: ["परिवार","धैर्य","पीढ़ी","प्यार"], gu: ["કુટુંબ","ધીરજ","પેઢી","પ્રેમ"], es: ["familia","paciencia","intergeneracional","amor"], fr: ["famille","patience","intergénérationnel","amour"] },
     title: {
@@ -914,7 +916,7 @@ const books = [
   },
   {
     slug: "kitchen-of-love",
-    age: "5-8",
+    age: "5-9",
     color: "amber",
     themes: { en: ["family","love","food","intergenerational"], hi: ["परिवार","प्यार","खाना","पीढ़ी"], gu: ["કુટુંબ","પ્રેમ","ખાણું","પેઢી"], es: ["familia","amor","comida","intergeneracional"], fr: ["famille","amour","nourriture","intergénérationnel"] },
     title: {
@@ -982,7 +984,7 @@ const books = [
   },
   {
     slug: "the-brave-little-seed",
-    age: "3-6",
+    age: "3-7",
     color: "sage",
     themes: { en: ["nature","growth","patience"], hi: ["प्रकृति","विकास","धैर्य"], gu: ["કુદરત","વિકાસ","ધીરજ"], es: ["naturaleza","crecimiento","paciencia"], fr: ["nature","croissance","patience"] },
     title: {
@@ -1016,7 +1018,7 @@ const books = [
   },
   {
     slug: "pip-and-the-lost-cloud",
-    age: "3-6",
+    age: "4-7",
     color: "sage",
     themes: { en: ["kindness","helping","weather"], hi: ["दया","मदद","मौसम"], gu: ["દયા","મદદ","હવામાન"], es: ["amabilidad","ayuda","clima"], fr: ["gentillesse","aide","météo"] },
     title: {
@@ -1050,7 +1052,7 @@ const books = [
   },
   {
     slug: "the-hundred-year-stone",
-    age: "5-8",
+    age: "5-9",
     color: "amber",
     themes: { en: ["courage","trying","friendship"], hi: ["साहस","प्रयास","दोस्ती"], gu: ["હિંમત","પ્રયત્ન","મિત્રતા"], es: ["coraje","intento","amistad"], fr: ["courage","essayer","amitié"] },
     title: {
@@ -1084,7 +1086,7 @@ const books = [
   },
   {
     slug: "moss-and-the-starry-night-sky",
-    age: "7-10",
+    age: "6-10",
     color: "coral",
     themes: { en: ["curiosity","wonder","night"], hi: ["जिज्ञासा","आश्चर्य","रात"], gu: ["જિજ્ઞાસા","આશ્ચર્ય","રાત"], es: ["curiosidad","asombro","noche"], fr: ["curiosité","émerveillement","nuit"] },
     title: {
@@ -1118,7 +1120,7 @@ const books = [
   },
   {
     slug: "the-quiet-bear",
-    age: "5-8",
+    age: "4-8",
     color: "amber",
     themes: { en: ["friendship","listening","feelings"], hi: ["दोस्ती","सुनना","भावनाएँ"], gu: ["મિત્રતા","સાંભળવું","લાગણીઓ"], es: ["amistad","escuchar","sentimientos"], fr: ["amitié","écoute","sentiments"] },
     title: {
@@ -1152,7 +1154,7 @@ const books = [
   },
   {
     slug: "tulis-whistle",
-    age: "5-8",
+    age: "5-9",
     color: "amber",
     themes: { en: ["persistence","practice","humor"], hi: ["दृढ़ता","अभ्यास","हास्य"], gu: ["દૃઢતા","અભ્યાસ","રમૂજ"], es: ["persistencia","práctica","humor"], fr: ["persévérance","pratique","humour"] },
     title: {
@@ -1186,7 +1188,7 @@ const books = [
   },
   {
     slug: "the-girl-who-stopped-looking",
-    age: "7-10",
+    age: "6-10",
     color: "coral",
     themes: { en: ["discipline","focus","sports"], hi: ["अनुशासन","एकाग्रता","खेल"], gu: ["શિસ્ત","એકાગ્રતા","રમત"], es: ["disciplina","enfoque","deportes"], fr: ["discipline","concentration","sport"] },
     title: {
