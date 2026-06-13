@@ -540,19 +540,6 @@ body {
   margin-bottom: 0.6rem;
 }
 
-.footer-sub {
-  font-family: var(--font-ui);
-  font-size: 0.82rem;
-  font-weight: 400;
-  color: var(--ink-light);
-  letter-spacing: 0.04em;
-}
-
-.footer-sub span {
-  margin: 0 0.35rem;
-  opacity: 0.4;
-}
-
 /* ── TRANSITIONS ──────────────────────── */
 
 .fade-text {
@@ -717,8 +704,6 @@ body {
 .author-link, .coauthor-label .author-link { color: #E9BD93 !important; }
 
 .footer-main { color: #ECE2EA !important; }
-.footer-sub { color: #CBBECC !important; }
-.footer-sub span { color: #CBBECC !important; }
 
 /* lesson line -> slate blue; tags -> cool, matched to each book's Twilight badge */
 .card-lesson { color: #5C6B86 !important; }
@@ -784,7 +769,6 @@ body {
 
 <footer class="site-footer">
   <p class="footer-main fade-text" data-i18n="footerMain"></p>
-  <p class="footer-sub fade-text" data-i18n="footerSub"></p>
 </footer>
 
 <script>
@@ -799,18 +783,11 @@ const i18n = {
     fr: "Une bibliothèque gratuite d’histoires pour enfants curieux"
   },
   footerMain: {
-    en: "Fablewick is free, ad-free, and made with love.",
-    hi: "Fablewick मुफ़्त है, विज्ञापन-मुक्त है, और प्यार से बना है।",
-    gu: "Fablewick મહામૂલ્ય છે, જાહેરાત-મુક્ત છે, અને પ્રેમથી બનેલું છે.",
-    es: "Fablewick es gratuito, sin anuncios y hecho con amor.",
-    fr: "Fablewick est gratuit, sans publicité, et fait avec amour."
-  },
-  footerSub: {
-    en: "Open source <span>·</span> No accounts <span>·</span> No tracking <span>·</span> COPPA-safe",
-    hi: "ओपन सोर्स <span>·</span> कोई खाता नहीं <span>·</span> कोई ट्रैकिंग नहीं <span>·</span> COPPA-सुरक्षित",
-    gu: "ઓપન સોર્સ <span>·</span> કોઈ ખાતું નહીં <span>·</span> કોઈ ટ્રેકિંગ નહીં <span>·</span> COPPA-સુરક્ષિત",
-    es: "Código abierto <span>·</span> Sin cuentas <span>·</span> Sin rastreo <span>·</span> Seguro para niños",
-    fr: "Open source <span>·</span> Sans compte <span>·</span> Sans pistage <span>·</span> Conforme COPPA"
+    en: "Fablewick is made with love.",
+    hi: "Fablewick प्यार से बना है।",
+    gu: "Fablewick પ્રેમથી બનેલું છે.",
+    es: "Fablewick está hecho con amor.",
+    fr: "Fablewick est fait avec amour."
   },
   levelLabels: {
     en: ["Little Listener", "New Reader", "On Your Own"],
