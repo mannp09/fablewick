@@ -100,6 +100,8 @@
   .coauthor-text{text-align:left;font-family:'Outfit',sans-serif}
   .coauthor-by{color:#ECE2EA;font-size:15px}
   .coauthor-sub{color:#CBBECC;font-size:13px;margin-top:2px}
+  .coauthor-contact{color:#CBBECC;font-size:13px;margin-top:2px}
+  .footer-source{font-family:'Outfit',sans-serif;font-size:12.5px;color:#CBBECC;margin:16px auto 0;max-width:580px;line-height:1.6}
   .site-footer a{color:#E9BD93;text-decoration:none;border-bottom:1px solid rgba(233,189,147,.45)}
   .site-footer a:hover{color:#FBF4EC}
   .footer-note{font-family:'Outfit',sans-serif;font-size:12.5px;color:#CBBECC;margin-top:8px}
@@ -123,8 +125,10 @@
         <div class="coauthor-text">
           <div class="coauthor-by" id="coauthorBy"></div>
           <div class="coauthor-sub" id="coauthorSub"></div>
+          <div class="coauthor-contact" id="coauthorContact"></div>
         </div>
       </div>
+      <div class="footer-source" id="source"></div>
       <div class="footer-note" id="note"></div>
     </footer>
   </section>
@@ -157,9 +161,15 @@ const UI = {
   note:{en:"This is a draft. More stories can be added.",
         gu:"આ એક ડ્રાફ્ટ છે. વધુ વાર્તાઓ ઉમેરી શકાય છે.",
         hi:"यह एक ड्राफ़्ट है। और कहानियाँ जोड़ी जा सकती हैं।"},
-  coauthorBy:{en:'Co-authored by <a href="https://github.com/mannp09" target="_blank" rel="noopener">Mann Patel</a>',
-              gu:'સહ-લેખક <a href="https://github.com/mannp09" target="_blank" rel="noopener">Mann Patel</a>',
-              hi:'सह-लेखक <a href="https://github.com/mannp09" target="_blank" rel="noopener">Mann Patel</a>'},
+  coauthorBy:{en:'Authored by <a href="https://github.com/mannp09" target="_blank" rel="noopener">Mann Patel</a>',
+              gu:'લેખક <a href="https://github.com/mannp09" target="_blank" rel="noopener">Mann Patel</a>',
+              hi:'लेखक <a href="https://github.com/mannp09" target="_blank" rel="noopener">Mann Patel</a>'},
+  coauthorContact:{en:'Contact: <a href="mailto:mushipizza0708@gmail.com">mushipizza0708@gmail.com</a>',
+                   gu:'સંપર્ક: <a href="mailto:mushipizza0708@gmail.com">mushipizza0708@gmail.com</a>',
+                   hi:'संपर्क: <a href="mailto:mushipizza0708@gmail.com">mushipizza0708@gmail.com</a>'},
+  source:{en:'Source material: <a href="https://ramkabir.org" target="_blank" rel="noopener">Ramkabir.org</a> &middot; <a href="https://www.njbhagatsamaj.org" target="_blank" rel="noopener">NJ Bhagat Samaj</a> — a visual representation of the stories found on these websites.',
+          gu:'સ્રોત સામગ્રી: <a href="https://ramkabir.org" target="_blank" rel="noopener">Ramkabir.org</a> &middot; <a href="https://www.njbhagatsamaj.org" target="_blank" rel="noopener">NJ Bhagat Samaj</a> — આ વેબસાઇટ્સ પર મળેલી વાર્તાઓનું દ્રશ્ય નિરૂપણ.',
+          hi:'स्रोत सामग्री: <a href="https://ramkabir.org" target="_blank" rel="noopener">Ramkabir.org</a> &middot; <a href="https://www.njbhagatsamaj.org" target="_blank" rel="noopener">NJ Bhagat Samaj</a> — इन वेबसाइटों पर मिली कहानियों का एक दृश्य रूपण।'},
   coauthorSub:{en:'Part of <a href="https://github.com/mannp09/fablewick" target="_blank" rel="noopener">Fablewick</a>',
                gu:'<a href="https://github.com/mannp09/fablewick" target="_blank" rel="noopener">Fablewick</a> નો એક ભાગ',
                hi:'<a href="https://github.com/mannp09/fablewick" target="_blank" rel="noopener">Fablewick</a> का हिस्सा'},
@@ -190,6 +200,8 @@ function renderStatic(){
   $("note").textContent = UI.note[lang];
   $("coauthorBy").innerHTML = UI.coauthorBy[lang];
   $("coauthorSub").innerHTML = UI.coauthorSub[lang];
+  $("coauthorContact").innerHTML = UI.coauthorContact[lang];
+  $("source").innerHTML = UI.source[lang];
   $("back").textContent = UI.back[lang];
 }
 function renderGrid(){
