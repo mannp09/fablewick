@@ -662,6 +662,13 @@ body {
   line-height: 1.7;
   color: var(--ink);
 }
+.coauthor-links {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  color: var(--ink-light);
+}
 @media (max-width: 540px) {
   .coauthor-block {
     grid-template-columns: 1fr;
@@ -702,6 +709,7 @@ body {
 .coauthor-label { color: #FBF4EC !important; }
 .coauthor-body { color: #D6CBD2 !important; }
 .author-link, .coauthor-label .author-link { color: #E9BD93 !important; }
+.coauthor-links { color: #CBBECC !important; }
 
 .footer-main { color: #ECE2EA !important; }
 
@@ -751,6 +759,7 @@ body {
     <div>
       <div class="coauthor-label" data-i18n-about="coauthor">Authored by Mann Patel</div>
       <div class="coauthor-body" data-i18n-about="coauthorBody"></div>
+      <div class="coauthor-links" data-i18n-about="coauthorLinks"></div>
     </div>
   </div>
 </section>
@@ -850,6 +859,13 @@ const i18n = {
       gu: "મેં આ મારા AI સ્ટેકનો ઉપયોગ કરીને લખ્યું. વાર્તાઓ પોતે એ લોકો પાસેથી આવે છે જેમને હું પ્રેમ કરું છું. બગીચામાં દાદા. રસોડામાં બા. દરેક શાંત શિક્ષક જેનું નામ ક્યારેય ઇતિહાસમાં ન આવ્યું. મેં Fablewick એટલે બનાવ્યું કે ગમે ત્યાંનું બાળક અર્થપૂર્ણ વાર્તાથી સૂઈ શકે.",
       es: "Las escribí utilizando mi stack de IA. Las historias mismas vienen de personas que amo. Dada en su jardín. Ba en su cocina. Cada maestro silencioso cuyo nombre nunca entró en la historia. Construí Fablewick para que cualquier niño en cualquier lugar pueda ser arropado por una historia que signifique algo.",
       fr: "Je les ai écrites en utilisant mon stack IA. Les histoires elles-mêmes viennent de gens que j’aime. Dada dans son jardin. Ba dans sa cuisine. Chaque enseignant silencieux dont le nom n’est jamais entré dans l’histoire. J’ai construit Fablewick pour qu’un enfant, n’importe où, puisse être bordé par une histoire qui veut dire quelque chose."
+    },
+    coauthorLinks: {
+      en: 'Contact: <a href="mailto:mann09patel@gmail.com" class="author-link">mann09patel@gmail.com</a> &middot; <a href="https://www.linkedin.com/in/mann09patel" target="_blank" rel="noopener" class="author-link">LinkedIn</a> &middot; Also read: <a href="ramkabir-fablewick.html" class="author-link">Ramkabir Fablewick</a>',
+      hi: 'संपर्क: <a href="mailto:mann09patel@gmail.com" class="author-link">mann09patel@gmail.com</a> &middot; <a href="https://www.linkedin.com/in/mann09patel" target="_blank" rel="noopener" class="author-link">LinkedIn</a> &middot; यह भी पढ़ें: <a href="ramkabir-fablewick.html" class="author-link">Ramkabir Fablewick</a>',
+      gu: 'સંપર્ક: <a href="mailto:mann09patel@gmail.com" class="author-link">mann09patel@gmail.com</a> &middot; <a href="https://www.linkedin.com/in/mann09patel" target="_blank" rel="noopener" class="author-link">LinkedIn</a> &middot; આ પણ વાંચો: <a href="ramkabir-fablewick.html" class="author-link">Ramkabir Fablewick</a>',
+      es: 'Contacto: <a href="mailto:mann09patel@gmail.com" class="author-link">mann09patel@gmail.com</a> &middot; <a href="https://www.linkedin.com/in/mann09patel" target="_blank" rel="noopener" class="author-link">LinkedIn</a> &middot; También: <a href="ramkabir-fablewick.html" class="author-link">Ramkabir Fablewick</a>',
+      fr: 'Contact : <a href="mailto:mann09patel@gmail.com" class="author-link">mann09patel@gmail.com</a> &middot; <a href="https://www.linkedin.com/in/mann09patel" target="_blank" rel="noopener" class="author-link">LinkedIn</a> &middot; À lire aussi : <a href="ramkabir-fablewick.html" class="author-link">Ramkabir Fablewick</a>'
     }
   }
 };
