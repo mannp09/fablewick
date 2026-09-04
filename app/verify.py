@@ -53,7 +53,12 @@ ROUTES = {
     "heritage-reader": "heritage/read/dry-banyan-twig",
 }
 
-REQUIRED_FONTS = ["Fraunces", "Lora", "Outfit"]
+REQUIRED_FONTS = ["Manrope"]
+
+# Mann's ruling 2026-09-04: one font, no italic anywhere, and the retired
+# Google fonts must never come back - not even loaded and unused.
+FORBIDDEN_FONTS = ["Fraunces", "Lora", "Outfit"]
+FORBIDDEN_TEXT = ["Free forever", "No accounts"]
 
 results = []
 
@@ -183,6 +188,37 @@ def run_checks_and_shots():
                         f"missing: {missing}" if missing else "",
                     )
 
+                    # Mann's ruling 2026-09-04: the retired Google fonts
+                    # must never be in document.fonts, loaded or not -
+                    # not just absent from the rendered text.
+                    forbidden_present = [
+                        f for f in FORBIDDEN_FONTS
+                        if any(f in family for family in loaded_fonts)
+                    ]
+                    check(
+                        f"{route_name}/{viewport_name}: document.fonts carries none of Fraunces/Lora/Outfit",
+                        len(forbidden_present) == 0,
+                        f"present: {forbidden_present}" if forbidden_present else "",
+                    )
+
+                    italic_count = page.evaluate(
+                        "() => Array.from(document.querySelectorAll('*'))"
+                        ".filter(el => getComputedStyle(el).fontStyle === 'italic').length"
+                    )
+                    check(
+                        f"{route_name}/{viewport_name}: no element has computed font-style italic",
+                        italic_count == 0,
+                        f"italic_count={italic_count}",
+                    )
+
+                    visible_text = page.inner_text("body")
+                    found_forbidden_text = [t for t in FORBIDDEN_TEXT if t in visible_text]
+                    check(
+                        f"{route_name}/{viewport_name}: no 'Free forever' / 'No accounts' text on the page",
+                        len(found_forbidden_text) == 0,
+                        f"found: {found_forbidden_text}" if found_forbidden_text else "",
+                    )
+
                     if viewport_name == "mobile":
                         scroll_width = page.evaluate("document.documentElement.scrollWidth")
                         check(
@@ -302,6 +338,102 @@ def check_library_page():
         )
 
         page.close()
+        browser.close()
+
+
+# ── wave 6: About section contact buttons ──────────────────────────────
+
+
+def check_about_actions():
+    """Wave 6: the About section's underlined mann.rodeo text link is now
+    a row of three Button components (mann.rodeo, Email, LinkedIn). Checks
+    the row's shape and hrefs at desktop, that the raw email address never
+    appears as visible page text at either viewport, and that the row
+    collapses into a full-width vertical stack at 390px - measured
+    against the copy column's own actual rendered width, since that
+    column has no hardcoded width of its own.
+    """
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+        page.goto(BASE, wait_until="networkidle", timeout=15000)
+        page.wait_for_timeout(400)
+
+        actions = page.locator("#about .about-actions")
+        check("about-actions: row present", actions.count() == 1)
+
+        children = actions.locator("> *")
+        check(
+            "about-actions: exactly 3 direct children",
+            children.count() == 3,
+            f"found {children.count()}",
+        )
+
+        hrefs = page.eval_on_selector_all(
+            "#about .about-actions > a", "els => els.map(e => e.getAttribute('href'))"
+        )
+        check(
+            "about-actions: hrefs are mann.rodeo, mailto, linkedin in order",
+            len(hrefs) == 3
+            and hrefs[0].startswith("https://mann.rodeo")
+            and hrefs[1].startswith("mailto:")
+            and hrefs[2].startswith("https://www.linkedin.com/"),
+            f"hrefs={hrefs}",
+        )
+
+        min_heights = page.eval_on_selector_all(
+            "#about .about-actions > a",
+            "els => els.map(e => parseFloat(getComputedStyle(e).minHeight))",
+        )
+        check(
+            "about-actions: every button's computed min-height is at least 44px",
+            len(min_heights) == 3 and all(h >= 44 for h in min_heights),
+            f"min_heights={min_heights}",
+        )
+
+        desktop_text = page.inner_text("body")
+        check(
+            "about-actions: the raw email never appears as visible page text (desktop)",
+            "mann09patel@gmail.com" not in desktop_text,
+        )
+
+        page.close()
+
+        mobile = browser.new_page(viewport={"width": 390, "height": 844})
+        mobile.goto(BASE, wait_until="networkidle", timeout=15000)
+        mobile.wait_for_timeout(400)
+        settle_reveals(mobile, 844)
+
+        mobile_text = mobile.inner_text("body")
+        check(
+            "about-actions: the raw email never appears as visible page text (390px)",
+            "mann09patel@gmail.com" not in mobile_text,
+        )
+
+        layout = mobile.evaluate(
+            """() => {
+                const copy = document.querySelector('#about .about-copy');
+                const btns = Array.from(document.querySelectorAll('#about .about-actions > a'));
+                const copyWidth = copy.getBoundingClientRect().width;
+                const tops = btns.map(b => b.getBoundingClientRect().top);
+                const widths = btns.map(b => b.getBoundingClientRect().width);
+                const stacked = tops[0] < tops[1] && tops[1] < tops[2];
+                return { copyWidth, widths, stacked };
+            }"""
+        )
+        check(
+            "about-actions: the 3 buttons stack vertically at 390px",
+            layout["stacked"],
+            f"layout={layout}",
+        )
+        check(
+            "about-actions: each stacked button's width is within 4px of the copy column's width",
+            len(layout["widths"]) == 3 and all(abs(w - layout["copyWidth"]) <= 4 for w in layout["widths"]),
+            f"copyWidth={layout['copyWidth']} widths={layout['widths']}",
+        )
+
+        mobile.close()
         browser.close()
 
 
@@ -781,6 +913,61 @@ def check_header_routes():
         browser.close()
 
 
+# ── wave 8: one font, no italic, no free line ──────────────────────────
+def check_manrope_font_samples():
+    """Wave 8 (docs/v2-plan-2026-09-04.md): Mann - 'You have font that I
+    don't like ... use font that I prefer.' Every text element's computed
+    font-family should now START with Manrope. Sampled across the element
+    kinds the plan names: body, h1, h2, a button, a card summary, a
+    reader page paragraph, a Heritage level chip - one page load per
+    route rather than one per selector.
+    """
+    samples = {
+        "": {
+            "body": "body",
+            "h2 (section title)": ".section-title",
+            "button (hero language chip)": ".hero-lang-chip",
+            "card summary": ".book-card-summary",
+        },
+        "heritage": {
+            "h1 (Heritage hero title)": ".heritage-hero-title",
+            "Heritage level chip": ".heritage-level-btn",
+        },
+        f"read/{READER_SLUG}": {
+            "reader page paragraph": ".reader-text p",
+        },
+    }
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1440, "height": 900})
+
+        for route_path, selectors in samples.items():
+            page.goto(BASE + route_path, wait_until="networkidle", timeout=15000)
+            page.wait_for_timeout(400)
+            if route_path.startswith("read/"):
+                # the reader's first content page only carries text once
+                # a page turn moves past the cover
+                page.click(".reader-nav-next")
+                page.wait_for_timeout(350)
+
+            for label, selector in selectors.items():
+                family = page.evaluate(
+                    "(sel) => { const el = document.querySelector(sel); "
+                    "return el ? getComputedStyle(el).fontFamily : null; }",
+                    selector,
+                )
+                ok = bool(family) and family.strip().lstrip("'\"").startswith("Manrope")
+                check(
+                    f"font sample [{route_path or 'library'}] {label}: computed font-family starts with Manrope",
+                    ok,
+                    f"selector={selector} font-family={family}",
+                )
+
+        page.close()
+        browser.close()
+
+
 def main():
     build()
     httpd = serve()
@@ -788,10 +975,12 @@ def main():
     try:
         files = run_checks_and_shots()
         check_library_page()
+        check_about_actions()
         check_reader_page()
         check_heritage_page()
         check_heritage_reader_page()
         check_header_routes()
+        check_manrope_font_samples()
     finally:
         httpd.shutdown()
 

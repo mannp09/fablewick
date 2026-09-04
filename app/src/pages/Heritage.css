@@ -29,7 +29,8 @@
 
 .heritage-hero-title {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   font-size: clamp(2.4rem, 7vw, 3.8rem);
   color: var(--dusk-ink);
 }

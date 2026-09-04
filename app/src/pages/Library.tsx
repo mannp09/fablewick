@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Section from '../components/Section';
 import Reveal from '../components/Reveal';
+import Button from '../components/Button';
 import { fablewickBooks, ramkabirBooks } from '../data';
 import { LANGUAGES, useLanguage } from '../context/LanguageContext';
 import './Library.css';
@@ -13,6 +14,49 @@ import './Library.css';
 // src/data/*.json are already written.
 const wordmarkUrl = '/fablewick/brand/fablewick-logo-light.png';
 const headshotUrl = '/fablewick/headshot.jpg';
+
+// About-section contact buttons, verbatim from mann-landing-v3's
+// content.ts `contact` object (email, linkedin) plus the mann.rodeo URL
+// this same page already linked to (confirmed live in
+// claude-workspace/2-Areas/connectors/domains.md). The raw email lives
+// only in the mailto: href below, never as visible text.
+const RODEO_URL = 'https://mann.rodeo';
+const CONTACT_EMAIL = 'mann09patel@gmail.com';
+const CONTACT_LINKEDIN = 'https://www.linkedin.com/in/mann09patel/';
+
+// Small inline icons for the contact buttons, 16px, currentColor, no
+// external icon library. Globe and envelope in a simple stroke style;
+// the LinkedIn mark is a custom-drawn "in" glyph rather than any brand
+// asset's exact path.
+function IconGlobe() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.8 2.6 4.4 5.7 4.4 9s-1.6 6.4-4.4 9c-2.8-2.6-4.4-5.7-4.4-9s1.6-6.4 4.4-9z" />
+    </svg>
+  );
+}
+
+function IconEnvelope() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </svg>
+  );
+}
+
+function IconLinkedIn() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="6.5" cy="7" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M6.5 11v8" />
+      <path d="M12 19v-8" />
+      <path d="M12 14.5c0-2.2 1.3-3.5 3-3.5 1.9 0 3 1.3 3 3.7V19" />
+    </svg>
+  );
+}
 
 // The four SOP steps, verbatim from mann.rodeo's AI Storybook card
 // (claude-workspace/1-Projects/mann-landing-v3/src/content.ts, the
@@ -215,9 +259,20 @@ export default function Library() {
                 her kitchen.
               </p>
               <p className="about-line">Fablewick is how any child, anywhere, gets that room too.</p>
-              <a className="about-rodeo-link" href="https://mann.rodeo" target="_blank" rel="noopener">
-                mann.rodeo →
-              </a>
+              <div className="about-actions">
+                <Button href={RODEO_URL} variant="filled">
+                  <IconGlobe />
+                  <span>mann.rodeo</span>
+                </Button>
+                <Button href={`mailto:${CONTACT_EMAIL}`} variant="outline">
+                  <IconEnvelope />
+                  <span>Email</span>
+                </Button>
+                <Button href={CONTACT_LINKEDIN} variant="outline">
+                  <IconLinkedIn />
+                  <span>LinkedIn</span>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -230,8 +285,6 @@ export default function Library() {
               </li>
             ))}
           </ol>
-
-          <p className="about-free-line">Free forever. No accounts. No ads.</p>
 
           <div className="support-block">
             <p className="support-heading">Support the library</p>
