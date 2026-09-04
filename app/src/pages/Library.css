@@ -1,0 +1,575 @@
+.library-page {
+  min-height: 100vh;
+}
+
+/* kept for src/pages/Heritage.tsx's wave-4 placeholder, which still
+   imports this file and uses these two utility classes */
+.route-note {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+.book-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* ── HERO ─────────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--dusk);
+  padding: clamp(4rem, 12vh, 7rem) 1.5rem clamp(3.5rem, 9vh, 5.5rem);
+  text-align: center;
+}
+
+.hero-starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-star {
+  position: absolute;
+  opacity: 0.16;
+  will-change: opacity, transform;
+}
+
+@keyframes heroTwinkle {
+  0%,
+  40%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.6);
+  }
+  47% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  54% {
+    opacity: 0.12;
+    transform: scale(0.6);
+  }
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hero-wordmark {
+  width: min(420px, 80vw);
+  height: auto;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.28));
+}
+
+.hero-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  color: var(--dusk-ink);
+  opacity: 0.92;
+}
+
+.hero-langs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.hero-lang-chip {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  border-radius: 100px;
+  border: 1.5px solid rgba(243, 236, 226, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dusk-ink);
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.hero-lang-chip:hover {
+  border-color: rgba(243, 236, 226, 0.7);
+}
+
+.hero-lang-chip[aria-pressed='true'] {
+  background: var(--dusk-ink);
+  border-color: var(--dusk-ink);
+  color: var(--dusk-top);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-star {
+    opacity: 0.4;
+  }
+}
+
+/* ── CARD GRID ────────────────────────────────────────────────── */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: var(--radius-cozy);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-warm);
+}
+
+.book-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.book-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-warm) var(--radius-warm) 0 0;
+}
+
+.age-chip {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 100px;
+  background: rgba(42, 33, 24, 0.62);
+  color: var(--cream);
+  backdrop-filter: blur(4px);
+}
+
+.book-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 1.35rem 1.4rem 1.5rem;
+  flex: 1;
+}
+
+.book-card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.book-card-summary {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+  opacity: 0.82;
+}
+
+.book-card-lesson {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--amber);
+  line-height: 1.5;
+}
+
+.book-card-tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--ink) 8%, var(--cream));
+  color: var(--ink);
+  opacity: 0.72;
+}
+
+.book-card-cta {
+  margin-top: 0.35rem;
+}
+
+.cta-arrow {
+  display: inline-block;
+  margin-left: 0.4em;
+  transition: transform 160ms ease;
+}
+
+.book-card:hover .cta-arrow,
+.heritage-card-copy:hover .cta-arrow {
+  transform: translateX(3px);
+}
+
+/* ── HERITAGE PREVIEW CARD ────────────────────────────────────── */
+
+/* The card itself is a plain div now (see Library.tsx) - the copy block
+   and the strip below are each their own links, so an <a> never nests
+   inside another <a>. */
+.heritage-card {
+  margin-top: 2.5rem;
+  padding: 2rem;
+  border-radius: var(--radius-cozy);
+  background: color-mix(in srgb, var(--amber) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.heritage-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-warm);
+}
+
+.heritage-card-copy {
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.heritage-kicker {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.heritage-title {
+  margin-top: 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+.heritage-line {
+  margin-top: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  opacity: 0.82;
+  max-width: 34ch;
+}
+
+.heritage-cta {
+  margin-top: 1.1rem;
+  background: var(--amber);
+  color: var(--ink);
+}
+.heritage-cta:hover {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+/* Desktop: a strip of five, each ~168px wide, room enough that the
+   covers actually read as pictures rather than a row of tiles. */
+.heritage-strip {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+}
+
+.heritage-strip-item {
+  display: block;
+  flex: 0 0 168px;
+  width: 168px;
+  border-radius: 12px;
+  border: 2px solid var(--cream);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.heritage-strip-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-warm);
+}
+
+.heritage-strip-item img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+/* Tablet: wraps to a 3-plus-2 grid rather than staying in one cramped row. */
+@media (max-width: 767px) {
+  .heritage-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .heritage-strip-item {
+    flex: none;
+    width: 100%;
+  }
+}
+
+/* Phone: a horizontal scroll strip instead of a grid, so every cover
+   stays a real 16:9 thumbnail instead of shrinking to fit. */
+@media (max-width: 480px) {
+  .heritage-strip {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .heritage-strip-item {
+    flex: 0 0 140px;
+    width: 140px;
+    scroll-snap-align: start;
+  }
+}
+
+/* ── ABOUT ────────────────────────────────────────────────────── */
+
+.about-grid {
+  display: flex;
+  gap: 1.75rem;
+  align-items: flex-start;
+}
+
+.about-headshot {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--cream);
+  box-shadow: var(--shadow-soft);
+}
+
+.about-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.about-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.about-line {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 56ch;
+}
+
+.about-rodeo-link {
+  align-self: flex-start;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--coral);
+  text-decoration: none;
+}
+.about-rodeo-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .about-grid {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .about-copy {
+    align-items: center;
+  }
+  .about-rodeo-link {
+    align-self: center;
+  }
+}
+
+/* ── SOP STRIP ────────────────────────────────────────────────── */
+
+.sop-strip {
+  list-style: none;
+  margin: 2.25rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.sop-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-top: 0.9rem;
+  border-top: 2px solid var(--line);
+}
+
+.sop-n {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.sop-title {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.sop-text {
+  font-family: var(--font-body);
+  font-size: 0.83rem;
+  line-height: 1.45;
+  opacity: 0.78;
+}
+
+@media (max-width: 768px) {
+  .sop-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 460px) {
+  .sop-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── SUPPORT + FREE LINE ──────────────────────────────────────── */
+
+.about-free-line {
+  margin-top: 1.75rem;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.support-block {
+  margin-top: 1rem;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.support-heading {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* One inline row per line: label, then the handle as a chip, then the
+   Copy button right after the chip - never pushed to the row's far
+   edge, and the whole row stays left aligned under the row above it. */
+.support-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
+
+.support-label {
+  font-weight: 600;
+  min-width: 56px;
+}
+
+.support-chip {
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-soft);
+  background: color-mix(in srgb, var(--ink) 6%, var(--cream));
+  border: 1px solid var(--line);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+.support-copy {
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border-radius: var(--radius-soft);
+  border: 1px solid var(--line);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.support-copy:hover {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+@media (max-width: 480px) {
+  .support-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── FOOTER ───────────────────────────────────────────────────── */
+
+.site-footer {
+  padding: 2.5rem 1.5rem 3rem;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  opacity: 0.6;
+}

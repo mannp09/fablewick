@@ -1,0 +1,52 @@
+/* Heritage-only additions layered on top of the shared Reader.css
+   classes (reader-overlay, reader-topbar, reader-book, reader-art,
+   reader-text, reader-navbar, ...), which this file's HeritageReader.tsx
+   imports as-is. Nothing here duplicates or overrides those rules - it
+   only styles the level control and the cover's small edition tag. */
+
+.heritage-level-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.heritage-level-btn {
+  min-height: 38px;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dusk-ink);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.heritage-level-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.heritage-level-btn.active {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+.heritage-kicker-tag {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+@media (max-width: 640px) {
+  .heritage-level-control {
+    display: none;
+  }
+}

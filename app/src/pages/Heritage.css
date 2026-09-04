@@ -1,0 +1,108 @@
+/* Heritage index page. Builds on Library.css's shared classes (.hero,
+   .hero-inner, .hero-tagline, .hero-langs, .hero-lang-chip, .card-grid,
+   .book-card*, .chip, .age-chip, .about-line, .site-footer), imported
+   as-is by Heritage.tsx alongside this file - nothing here overrides
+   those rules, it only adds what Library.css has no concept of: the
+   amber-led hero wash, the level control, and the back-to-Fablewick
+   link. Reader.css supplies .reader-starfield/.reader-star for the
+   reused <Starfield /> component. */
+
+.hero-heritage {
+  /* Same dusk gradient as the reader stage, with an amber glow rising
+     from the bottom so the Heritage hero reads as a warmer register
+     than Fablewick's own hero (which is pure dusk, no wash) while
+     staying the same night sky - per the ruling: "keep the dusk stage
+     but with the amber accent leading". */
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(212, 146, 94, 0.38), transparent 62%),
+    var(--dusk);
+}
+
+.heritage-kicker-tag {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.heritage-hero-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.4rem, 7vw, 3.8rem);
+  color: var(--dusk-ink);
+}
+
+.heritage-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.heritage-hero-levels.heritage-level-control,
+.heritage-level-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(243, 236, 226, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.heritage-level-btn {
+  min-height: 40px;
+  padding: 0 0.85rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dusk-ink);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.heritage-level-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.heritage-level-btn.active {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+.heritage-back-link {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--dusk-ink);
+  opacity: 0.85;
+  text-decoration: none;
+}
+.heritage-back-link:hover {
+  color: var(--amber);
+  opacity: 1;
+}
+
+.heritage-about {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 640px;
+}
+.heritage-about a {
+  color: var(--coral);
+  font-weight: 600;
+}
+.heritage-about a:hover {
+  text-decoration: underline;
+}

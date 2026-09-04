@@ -1,0 +1,76 @@
+/* Fablewick palette, lifted from CLAUDE.md at the repo root. The dusk
+   gradient stops are read verbatim from the live library/fablewick-landing.html
+   reader stage (its "DUSK THEME" body background) so the app never drifts
+   from the shipped site's own night sky. */
+
+:root {
+  --cream: #FBF6EE;
+  --ink: #2A2118;
+  --sage: #8FA68A;
+  --amber: #D4925E;
+  --coral: #D67A6E;
+
+  /* dusk gradient stops, verbatim from fablewick-landing.html */
+  --dusk-top: #1C2A52;
+  --dusk-mid: #46396A;
+  --dusk-bottom: #B97E7A;
+  --dusk-ink: #F3ECE2;
+  --dusk: linear-gradient(180deg, var(--dusk-top) 0%, var(--dusk-mid) 52%, var(--dusk-bottom) 100%);
+
+  --line: rgba(42, 33, 24, 0.12);
+  --shadow-soft: 0 1px 2px rgba(42, 33, 24, 0.06), 0 8px 20px rgba(42, 33, 24, 0.08);
+  --shadow-warm: 0 2px 4px rgba(42, 33, 24, 0.08), 0 16px 34px rgba(42, 33, 24, 0.12);
+  --shadow-cozy: 0 4px 10px rgba(42, 33, 24, 0.10), 0 24px 48px rgba(42, 33, 24, 0.16);
+
+  --radius-soft: 12px;
+  --radius-warm: 20px;
+  --radius-cozy: 28px;
+
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Lora', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: var(--font-ui);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

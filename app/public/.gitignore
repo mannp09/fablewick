@@ -1,0 +1,8 @@
+# Copies made by scripts/sync-data.mjs from sources that already live
+# elsewhere in the repo (src/assets/pages/, library/assets/ramkabir/, and
+# mann-landing-v3's headshot.jpg). Never committed here, so the art never
+# lives twice in git. wave 1b writes cover-trim.jpg alongside cover.jpg
+# for each slug; that stays out too.
+/art/
+/headshot.jpg
+/brand/
