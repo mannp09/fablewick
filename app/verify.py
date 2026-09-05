@@ -370,20 +370,28 @@ def check_about_actions():
             f"found {children.count()}",
         )
 
-        hrefs = page.eval_on_selector_all(
-            "#about .about-actions > a", "els => els.map(e => e.getAttribute('href'))"
+        # Wave "Email button" (2026-09-05): the Email action is now a real
+        # <button> (copies the address, flips its own label, then opens
+        # mail) rather than an <a href="mailto:...">, so this row is no
+        # longer all-anchors - select both tags and check the middle one
+        # by tag instead of by href.
+        tags = page.eval_on_selector_all(
+            "#about .about-actions > a, #about .about-actions > button",
+            "els => els.map(e => ({tag: e.tagName, href: e.getAttribute('href')}))",
         )
         check(
-            "about-actions: hrefs are mann.rodeo, mailto, linkedin in order",
-            len(hrefs) == 3
-            and hrefs[0].startswith("https://mann.rodeo")
-            and hrefs[1].startswith("mailto:")
-            and hrefs[2].startswith("https://www.linkedin.com/"),
-            f"hrefs={hrefs}",
+            "about-actions: mann.rodeo anchor, Email button, linkedin anchor in order",
+            len(tags) == 3
+            and tags[0]["tag"] == "A"
+            and tags[0]["href"].startswith("https://mann.rodeo")
+            and tags[1]["tag"] == "BUTTON"
+            and tags[2]["tag"] == "A"
+            and tags[2]["href"].startswith("https://www.linkedin.com/"),
+            f"tags={tags}",
         )
 
         min_heights = page.eval_on_selector_all(
-            "#about .about-actions > a",
+            "#about .about-actions > a, #about .about-actions > button",
             "els => els.map(e => parseFloat(getComputedStyle(e).minHeight))",
         )
         check(
@@ -397,6 +405,51 @@ def check_about_actions():
             "about-actions: the raw email never appears as visible page text (desktop)",
             "mann09patel@gmail.com" not in desktop_text,
         )
+
+        # ---- Email button: copies to clipboard, flips its label, then
+        # opens mail (intercepted via window.__openMail so the test page
+        # never actually navigates) ----
+        page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+        page.evaluate("() => { window.__openMail = (href) => { window.__lastMailHref = href; }; }")
+        SHOTS.mkdir(exist_ok=True)
+        page.screenshot(path=str(SHOTS / "wave-email-fablewick-before.png"))
+
+        email_button = page.locator("#about .about-actions > button")
+        email_button.click()
+        label_after_click = None
+        for _ in range(6):
+            label_after_click = email_button.inner_text().strip()
+            if label_after_click == "Copied":
+                break
+            page.wait_for_timeout(50)
+        check(
+            "Email button: label reads Copied within 300ms of the click",
+            label_after_click == "Copied",
+            f"label={label_after_click}",
+        )
+
+        clipboard_text = page.evaluate("() => navigator.clipboard.readText()")
+        check(
+            "Email button: clipboard holds the address after the click",
+            clipboard_text == "mann09patel@gmail.com",
+            f"clipboard={clipboard_text}",
+        )
+
+        mail_href = page.evaluate("() => window.__lastMailHref")
+        check(
+            "Email button: still opens mailto (intercepted) after the copy",
+            mail_href == "mailto:mann09patel@gmail.com",
+            f"mail_href={mail_href}",
+        )
+
+        text_after_click = page.inner_text("body")
+        check(
+            "about-actions: the raw email still never appears as visible page text after the click",
+            "mann09patel@gmail.com" not in text_after_click,
+        )
+
+        page.wait_for_timeout(1000)
+        page.screenshot(path=str(SHOTS / "wave-email-fablewick-after.png"))
 
         page.close()
 
@@ -414,7 +467,7 @@ def check_about_actions():
         layout = mobile.evaluate(
             """() => {
                 const copy = document.querySelector('#about .about-copy');
-                const btns = Array.from(document.querySelectorAll('#about .about-actions > a'));
+                const btns = Array.from(document.querySelectorAll('#about .about-actions > a, #about .about-actions > button'));
                 const copyWidth = copy.getBoundingClientRect().width;
                 const tops = btns.map(b => b.getBoundingClientRect().top);
                 const widths = btns.map(b => b.getBoundingClientRect().width);

@@ -19,10 +19,23 @@ const headshotUrl = '/fablewick/headshot.jpg';
 // content.ts `contact` object (email, linkedin) plus the mann.rodeo URL
 // this same page already linked to (confirmed live in
 // claude-workspace/2-Areas/connectors/domains.md). The raw email lives
-// only in the mailto: href below, never as visible text.
+// only in the mailto: passed to openMail() and the clipboard, never as
+// visible text.
 const RODEO_URL = 'https://mann.rodeo';
 const CONTACT_EMAIL = 'mann09patel@gmail.com';
 const CONTACT_LINKEDIN = 'https://www.linkedin.com/in/mann09patel/';
+
+// Wraps the mailto navigation so a Playwright test can intercept it by
+// defining window.__openMail before the click, without touching the
+// real navigation path production uses.
+function openMail(href: string) {
+  const w = window as unknown as { __openMail?: (href: string) => void };
+  if (typeof w.__openMail === 'function') {
+    w.__openMail(href);
+    return;
+  }
+  window.location.href = href;
+}
 
 // Small inline icons for the contact buttons, 16px, currentColor, no
 // external icon library. Globe and envelope in a simple stroke style;
@@ -139,12 +152,28 @@ function SupportHandle({ label, value }: { label: string; value: string }) {
 export default function Library() {
   const { lang, setLang } = useLanguage();
   const year = new Date().getFullYear();
+  const [emailLabel, setEmailLabel] = useState('Email');
+  const emailTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (window.location.hash === '#about') {
       document.getElementById('about')?.scrollIntoView();
     }
   }, []);
+
+  useEffect(() => () => clearTimeout(emailTimer.current), []);
+
+  const handleEmailClick = async () => {
+    try {
+      await navigator.clipboard.writeText(CONTACT_EMAIL);
+      setEmailLabel('Copied');
+    } catch {
+      setEmailLabel('Opening mail');
+    }
+    clearTimeout(emailTimer.current);
+    emailTimer.current = setTimeout(() => setEmailLabel('Email'), 1600);
+    openMail(`mailto:${CONTACT_EMAIL}`);
+  };
 
   return (
     <main className="library-page">
@@ -264,9 +293,15 @@ export default function Library() {
                   <IconGlobe />
                   <span>mann.rodeo</span>
                 </Button>
-                <Button href={`mailto:${CONTACT_EMAIL}`} variant="outline">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleEmailClick}
+                  title="Copy address and open mail"
+                  aria-label="Email, copies the address and opens your mail app"
+                >
                   <IconEnvelope />
-                  <span>Email</span>
+                  <span>{emailLabel}</span>
                 </Button>
                 <Button href={CONTACT_LINKEDIN} variant="outline">
                   <IconLinkedIn />
